@@ -7,32 +7,32 @@
   1. Data Overview (Cek sampel & jumlah baris)
   2. Missing Values Check (Cek kolom ber-NULL)
   3. Duplication Check (Cek duplikasi pada Primary Key)
-  4. Data Validity Check (Cek logika & keabsahan nilai)
+  4. DATA VALIDITY CHECK CHECK (Cek logika & keabsahan nilai)
   
 ## STRUKTUR QUERY UNTUK TAHAP DQA
 
 **1. Overview**
-```
+```sql
 SELECT * FROM <table_name> LIMIT 10;
 SELECT COUNT(*) AS total_rows FROM <table_name>;
 ```
 **2. Missing Values (PostgreSQL Trick)**
 
 **version 1**
-```
+```sql
 SELECT
 COUNT(*) AS total_NULL
 FROM <table_name>
 WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4> is null;
 ```
 ** OR** 
-```
+```sql
 SELECT *
 FROM <table_name>
 WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4>
 ```
 **version 2**
-```
+```sql
 SELECT 
     COUNT(*) AS total_rows,
     COUNT(*) - COUNT(<column_1>) AS <column_1>_null_count,
@@ -40,7 +40,7 @@ SELECT
 FROM <table_name>;
 ```
 **version 3**
-```
+```sql
 SELECT 
     COUNT(*) AS total_rows,
     COUNT(order_approved_at) AS filled_rows,
@@ -51,14 +51,14 @@ FROM orders;
 **3. Duplication Check**
 
 **version 1**
-```
+```sql
 SELECT 
     COUNT(*) - COUNT(DISTINCT <column_1>) AS <column_1>_duplicat_count,
     COUNT(*) - COUNT(DISTINCT <column_2>) AS <column_2>_duplicat_count
 FROM <table_name>;
 ```
 **version 2**
-```
+```sql
 SELECT
     <column_1>,
     COUNT(*) AS duplicate_count
@@ -67,32 +67,32 @@ GROUP BY 1
 HAVING COUNT(*) > 1
 ORDER BY duplicate_count DESC;
 ```
-**4. Data Validity Check**
-```
+**4. DATA VALIDITY CHECK CHECK**
+```sql
 SELECT COUNT(*) FILTER (WHERE <column_numeric> < 0) AS invalid_negative_values
 FROM <table_name>;
 ```
 
 ## IMPLEMENTASI PADA TABEL OLIST
 ### 1. TABEL: product_categories
-```
--- Overview & Row Count
+```sql
+-- OVERVIEW & ROW COUNT
 SELECT * FROM product_categories;
 SELECT COUNT(*) AS total_rows FROM orders;
 
--- Null Check
+-- NULL CHECK
 SELECT
 COUNT(*) AS NULL
 FROM  product_categories
 WHERE  product_category_name is null or product_category_name_english IS NULL;
 
--- Duplicate Check
+-- DUPLICATE CHECK
 SELECT
 	COUNT(*) - COUNT(DISTINCT product_category_name) AS category_name_duplikat,
 	COUNT(*) - COUNT(DISTINCT product_category_name_english) AS name_english_duplikat
 FROM product_categories;
 
--- Data Validity Check (kelengkapan produk kategory)
+-- DATA VALIDITY CHECK (kelengkapan produk kategory)
 select p.product_category_name
 from products p 
 left join product_categories pc 
@@ -102,12 +102,12 @@ where pc.product_category_name is null and
 order by 1;
 ```
 ### 2. TABEL: customers
-```
--- Overview & Row Count
+```sql
+-- OVERVIEW & ROW COUNT
 SELECT * FROM customers;
 select count (*) as row_amount from customers;
 
--- Null Check
+-- NULL CHECK
 SELECT
 COUNT(*) AS NULL
 FROM customers
@@ -123,13 +123,14 @@ SELECT
     COUNT(*) - COUNT(customer_state) AS customer_state
 from  customers;
 
--- Duplicate Check
+-- DUPLICATE CHECK
 SELECT
 	COUNT(*) - COUNT(DISTINCT customer_id) AS id_duplikat,
 	COUNT(*) - COUNT(DISTINCT customer_unique_id) AS unique_duplikat,
 	COUNT(*) - COUNT(DISTINCT customer_zip_code_prefix) AS zip_code_duplikat
 FROM customers;
-
+--		|
+--		v
 SELECT
 customer_unique_id,
 COUNT(*) 
@@ -139,12 +140,12 @@ HAVING COUNT(*)>1
 order by 2 desc;
 ```
 ### 3. TABEL: geolocation
-```
--- Overview & Row Count
+```sql
+-- OVERVIEW & ROW COUNT
 select * from geolocation;
 select count (*) as row_amount from geolocation;
 
--- Null Check
+-- NULL CHECK
 SELECT
 COUNT(*) AS NULL
 FROM geolocation
@@ -153,19 +154,19 @@ geolocation_city is null or geolocation_state is null;
 ```
 
 ### 4. TABEL: sellers
-```
--- Overview & Row Count
+```sql
+-- OVERVIEW & ROW COUNT
 select * from sellers;
 select count (*) as row_amount from sellers;
 
--- Null Check
+-- NULL CHECK
 SELECT
 COUNT(*) AS NULL
 FROM sellers
 WHERE seller_id is null or seller_zip_code_prefix IS NULL or seller_city is null 
 or seller_state is null;
 
--- Duplicate Check
+-- DUPLICATE CHECK
 SELECT
 	COUNT(*) - COUNT(DISTINCT seller_id) AS id_duplikat,
 	COUNT(*) - COUNT(DISTINCT seller_zip_code_prefix) AS zip_code_duplikat,
@@ -174,12 +175,12 @@ SELECT
 FROM sellers;
 ```
 ### 5. TABEL: products
-```
--- Overview & Row Count
+```sql
+-- OVERVIEW & ROW COUNT
 select * from products;
 select count (*) as row_amount from products;
 
--- Null Check (terdapat 610 product_category_name null)
+-- NULL CHECK (terdapat 610 product_category_name null)
 SELECT
     COUNT(*) AS total_rows,
     COUNT(*) - COUNT(product_id) AS id_null,
@@ -196,14 +197,16 @@ from  products;
 --     v
 SELECT *
 FROM products
-WHERE product_id is null or product_category_name IS NULL or product_name_lenght is null or product_description_lenght is null or product_photos_qty is null or product_weight_g is null or product_length_cm is null or product_height_cm is null or product_width_cm is null;
+WHERE product_id is null or product_category_name IS NULL or product_name_lenght is null or product_description_lenght is null or
+product_photos_qty is null or product_weight_g is null or product_length_cm is null or product_height_cm is null or product_width_cm
+is null;
 
--- Duplicate Check
+-- DUPLICATE CHECK
 SELECT
 	COUNT(*) - COUNT(DISTINCT product_id) AS id_duplikat
 FROM products;
 
--- data validity
+-- DATA VALIDITY CHECK
 SELECT
     COUNT(*) FILTER (WHERE product_weight_g < 0) AS negative_weight,
     COUNT(*) FILTER (WHERE product_length_cm < 0) AS negative_length,
@@ -213,12 +216,12 @@ SELECT
 FROM products;
 ```
 ### 6. TABEL: orders
-```
--- Overview & Row Count
+```sql
+-- OVERVIEW & ROW COUNT
 select * from orders;
 select count(*) as jumlah_row from orders;
 
--- Null Check
+-- NULL CHECK
 SELECT
     COUNT(*) AS total_rows,
 
@@ -257,28 +260,32 @@ WHERE  order_status = 'delivered' and (order_approved_at is null or order_delive
 is null or order_delivered_customer_date is null) 
 order by order_approved_at,order_delivered_carrier_date, order_delivered_customer_date;
 
--- Duplicate Check
+-- DUPLICATE CHECK
 SELECT
 	COUNT(*) - COUNT(DISTINCT order_id) AS order_id_duplikat,
 	COUNT(*) - COUNT(DISTINCT customer_id) AS customer_id_duplikat
 FROM orders;
 
--- data validity
+-- DATA VALIDITY CHECK
+
 -- order_approved_at < order_purchase_timestamp
 SELECT COUNT(*) AS invalid_purchase_approval
 FROM orders
 WHERE order_approved_at IS NOT NULL
   AND order_approved_at < order_purchase_timestamp;
+
 -- order_delivered_carrier_date < order_purchase_timestamp
 SELECT COUNT(*) AS invalid_carrier_delivery
 FROM orders
 WHERE order_delivered_carrier_date IS NOT NULL
   AND (order_delivered_carrier_date < order_purchase_timestamp);
+
 -- order_delivered_customer_date < order_purchase_timestamp
 SELECT COUNT(*) AS invalid_customer_delivery
 FROM orders
 WHERE order_delivered_customer_date IS NOT NULL
   AND order_delivered_customer_date < order_purchase_timestamp;
+
 -- order_delivered_customer_date < order_delivered_carrier_date
 SELECT COUNT(*) AS invalid_delivery_sequence
 FROM orders
@@ -299,6 +306,7 @@ FROM orders
 WHERE order_delivered_carrier_date IS NOT NULL
   AND order_delivered_carrier_date < order_purchase_timestamp
 ORDER BY order_purchase_timestamp;
+
 -- ukur
 SELECT
     COUNT(*) AS invalid_records,
@@ -311,6 +319,7 @@ SELECT
 FROM orders
 WHERE order_delivered_carrier_date IS NOT NULL
   AND order_delivered_carrier_date < order_purchase_timestamp;
+
 -- order_id that have largerst diference limit 10
 SELECT 
     order_id,
@@ -323,6 +332,7 @@ WHERE order_delivered_carrier_date IS NOT NULL
   AND order_delivered_carrier_date < order_purchase_timestamp
 ORDER BY difference_interval ASC
 LIMIT 10;
+
 -- -- order_id that have smallest diference limit 10
 SELECT 
     order_id,
@@ -335,6 +345,7 @@ WHERE order_delivered_carrier_date IS NOT NULL
   AND order_delivered_carrier_date < order_purchase_timestamp
 ORDER BY difference_interval DESC
 LIMIT 10;
+
 --checking 23 invalid_delivery_sequence
 SELECT
     order_id,
@@ -349,7 +360,8 @@ WHERE order_delivered_customer_date IS NOT NULL
   AND order_delivered_carrier_date IS NOT NULL
   AND order_delivered_customer_date < order_delivered_carrier_date
 ORDER BY order_purchase_timestamp;
--- are the 23 include in 166
+
+-- apakah 23 termasuk kedalam 166
 SELECT COUNT(*) AS overlap_anomalies
 FROM orders
 WHERE order_delivered_carrier_date < order_purchase_timestamp
@@ -370,21 +382,145 @@ GROUP BY order_status
 ORDER BY total_anomalies DESC;
 ```
 ### 7. TABEL: order_item
-```
--- Overview & Row Count
--- Null Check
--- Duplicate Check
+```sql
+-- OVERVIEW & ROW COUNT
+select * from order_items;
+select count(*) as jumlah_row from order_items;
+
+-- NULL CHECK
+SELECT
+count(*)
+FROM order_items
+WHERE order_id is null or order_item_id IS NULL or product_id is null or
+seller_id is null or shipping_limit_date is null or price is null or freight_value is null;
+
+-- DUPLICATE CHECK
+SELECT
+	COUNT(*) - COUNT(DISTINCT order_id) AS order_id_duplikat,
+	COUNT(*) - COUNT(DISTINCT order_item_id) AS order_item_id_duplikat,
+	COUNT(*) - COUNT(DISTINCT product_id) AS product_id_duplikat,
+	COUNT(*) - COUNT(DISTINCT seller_id) AS seller_id_duplikat,
+	COUNT(*) - COUNT(DISTINCT shipping_limit_date) AS shipping_limit_date_duplikat,
+	COUNT(*) - COUNT(DISTINCT price) AS price_duplikat,
+	COUNT(*) - COUNT(DISTINCT freight_value) AS freight_value_duplikat
+FROM order_items;
+
+SELECT
+order_id,
+COUNT(*) 
+FROM order_items
+GROUP BY order_id
+HAVING COUNT(*)>1
+order by 2 desc;
+
+-- data validation
+SELECT
+    COUNT(*) FILTER (WHERE price < 0) AS negative_price,
+    COUNT(*) FILTER (WHERE freight_value < 0) AS negative_freight
+FROM order_items;
 ```
 ### 8. TABEL: order_payments
-```
--- Overview & Row Count
--- Null Check
--- Duplicate Check
+```sql
+-- OVERVIEW & ROW COUNT
+select * from order_payments
+order by order_id;
+select count(*) as jumlah_row from order_payments;
+-- NULL CHECK
+SELECT
+count(*)
+FROM order_payments
+WHERE order_id is null or payment_sequential IS NULL or payment_type is null or
+payment_installments is null or payment_value is null;
+
+-- DUPLICATE CHECK
+SELECT
+	COUNT(*) - COUNT(DISTINCT order_id) AS order_id_duplikat,
+	COUNT(*) - COUNT(DISTINCT payment_sequential) AS payment_sequential_duplikat,
+	COUNT(*) - COUNT(DISTINCT payment_type) AS payment_type_duplikat,
+	COUNT(*) - COUNT(DISTINCT payment_installments) AS payment_installments_duplikat,
+	COUNT(*) - COUNT(DISTINCT payment_value) AS payment_value_duplikat
+FROM order_payments;
+
+SELECT
+order_id,
+COUNT(*) 
+FROM order_payments
+GROUP BY order_id
+HAVING COUNT(*)>1
+order by 2 desc;
+
+-- DATA VALIDITY CHECK
+SELECT
+    COUNT(*) FILTER (WHERE payment_value < 0) AS negative_payment,
+    COUNT(*) FILTER (WHERE payment_installments < 1) AS invalid_installments
+FROM order_payments;
+--		|
+--		v
+SELECT
+    order_id,
+    payment_sequential,
+    payment_type,
+    payment_installments,
+    payment_value
+FROM order_payments
+WHERE payment_installments < 1;
+--		|
+--		v
+SELECT
+    payment_type,
+    payment_installments,
+    COUNT(*) AS total_records
+FROM order_payments
+WHERE payment_installments < 1
+GROUP BY payment_type, payment_installments
+ORDER BY total_records DESC;
 ```
 ### 9. TABEL: order_review
+```sql
+-- OVERVIEW & ROW COUNT
+select * from order_reviews;
+select count(*) as jumlah_row from order_reviews;
+
+-- NULL CHECK
+SELECT
+count(*)
+FROM order_reviews
+WHERE review_id is null or order_id IS NULL or review_score is null or
+review_comment_title is null or review_comment_message is null or review_creation_date
+is null or review_answer_timestamp is null ;
+
+SELECT
+    COUNT(*) AS total_rows,
+
+    COUNT(*) - COUNT(review_id) AS review_id_null,
+    COUNT(*) - COUNT(order_id) AS order_id_null,
+    COUNT(*) - COUNT(review_score) AS review_score_null,
+    COUNT(*) - COUNT(review_comment_title) AS review_comment_title_null,
+    COUNT(*) - COUNT(review_comment_message) AS review_comment_message_null,
+	COUNT(*) - COUNT(review_creation_date) AS review_creation_date_null,
+	COUNT(*) - COUNT(review_answer_timestamp) AS review_answer_timestamp_null
+from order_reviews;
+-- DUPLICATE CHECK
+SELECT
+	COUNT(*) - COUNT(DISTINCT review_id) AS review_id_duplikat,
+    COUNT(*) - COUNT(DISTINCT order_id) AS order_id_duplikat,
+    COUNT(*) - COUNT(DISTINCT review_score) AS review_score_duplikat,
+    COUNT(*) - COUNT(DISTINCT review_comment_title) AS review_comment_title_duplikat,
+    COUNT(*) - COUNT(DISTINCT review_comment_message) AS review_comment_message_duplikat,
+	COUNT(*) - COUNT(DISTINCT review_creation_date) AS review_creation_date_duplikat,
+	COUNT(*) - COUNT(DISTINCT review_answer_timestamp) AS review_answer_timestamp_duplikat
+FROM order_reviews;
+
+-- DATA VALIDITY CHECK 
+SELECT
+    COUNT(*) FILTER (WHERE review_score < 1) AS score_below_1,
+    COUNT(*) FILTER (WHERE review_score > 5) AS score_above_5
+FROM order_reviews;
 ```
--- Overview & Row Count
--- Null Check
--- Duplicate Check
-```
+
+## QDA FINDING
+**product_categories**
+pada product_categories terdapat produk kategori yang belum lengkap yaitu:
+`pc_gamer` dan `portateis_cozinha_e_preparadores_de_alimentos`
+
 
