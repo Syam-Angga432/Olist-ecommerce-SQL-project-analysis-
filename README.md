@@ -1,16 +1,16 @@
 # Olist E-Commerce Sales & Logistics Performance Analysis
-## Executive Summary
+## 1. Executive Summary
 Proyek ini menganalisis dataset publik dari Olist—platform marketplace e-commerce terbesar di Brazil—yang mencakup lebih dari 100.000 transaksi dari periode 2016 hingga 2018. Mengingat e-commerce di Brazil menghadapi tantangan geografis dan logistik yang kompleks, analisis ini bertujuan untuk mengevaluasi dinamika penjualan, distribusi pelanggan, performa pengiriman, serta dampaknya terhadap kepuasan pelanggan (review score).
 
 Menggunakan PostgreSQL, analisis dilakukan dengan menggabungkan dan mengagregasi 8 tabel data terelasi untuk mengekstrak business insight yang actionable. Hasil analisis ini memberikan gambaran menyeluruh tentang faktor-faktor penentu pertumbuhan revenue dan efisiensi rantai pasok Olist guna mendukung pengambilan keputusan berbasis data.
 
-## Key Question
+## 2. Key Question
 ### Overall Business & Sales Dynamics:
-* Bagaimana kinerja bisnis Olist secara keseluruhan, dan bagaimana tren pertumbuhan penjualan berubah dari waktu ke waktu (MoM & YoY)?
+* Bagaimana kinerja bisnis Olist secara keseluruhan, dan bagaimana tren pertumbuhan penjualan berubah dari waktu ke waktu (MoM)?
 * Kategori produk mana yang memberikan kontribusi revenue terbesar serta mendominasi volume penjualan?
 ### Customer Retention & Value:
 * Seberapa kuat tingkat retensi dan pembelian berulang (repeat purchase) pelanggan di platform Olist?
-* Apakah pelanggan berulang (repeat customers) memiliki nilai transaksi (customer lifetime value) dan pola pembelian yang berbeda dibandingkan one-time customers?
+* Apakah pelanggan berulang (repeat customers) memiliki nilai transaksi dan pola pembelian yang berbeda dibandingkan one-time customers?
 ### Seller Concentration & Operational Health:
 * Seberapa terkonsentrasi revenue pada segmen seller tertentu, dan seller mana yang memiliki indikasi masalah operasional?
 ### Order Cancellations & Revenue Impact:
@@ -36,3 +36,182 @@ Analisis ini menggunakan dataset publik dari Olist yang disimpan dalam database 
 
 ### Entity Relationship Diagram (ERD)
 <img width="2201" height="1049" alt="ERD" src="https://github.com/user-attachments/assets/ba3c0f30-ccdf-4162-85de-19a558ff006b" />
+
+## 4. Analysis Workflow & Methodology
+
+Proses analisis dilakukan secara terstruktur menggunakan PostgreSQL melalui 4 tahapan utama:
+
+### 1. Data Preparation
+* **Creating Database & Tables:** Membuat database `olist_project` dan mendefinisikan skema 9 tabel sesuai dengan tipe data yang tepat.
+* **Constraints Setup:** Menetapkannya *Primary Key* (PK) dan *Foreign Key* (FK) untuk menjaga integritas relasional antar-tabel.
+
+### 2. Data Quality Assessment (DQA)
+* **Null Value Check:** Identifikasi kolom dengan nilai yang hilang (*missing values*), terutama pada tanggal pengiriman dan skor ulasan.
+* **Duplicate Check:** Pemeriksaan duplikasi pada ID unik (seperti `order_id` dan `customer_id`).
+* **Data Validation:** Memastikan inkonsistensi data, seperti tanggal pengiriman yang mendahului tanggal pemesanan atau format teks kategori.
+
+### 3. Data Cleaning
+* **Handling Nulls:** Penanganan nilai *null* secara spesifik (misal: imputasi, *flagging*, atau mengeklusi transaksi yang dibatalkan dari perhitungan durasi pengiriman).
+* **Handling Duplicates:** Pembersihan data ganda untuk memastikan agregasi *revenue* dan jumlah pesanan akurat.
+
+## 4. Analysis Workflow & Methodology
+
+Proses analisis dilakukan secara terstruktur menggunakan PostgreSQL melalui 4 tahapan utama:
+
+### 1. Data Preparation
+* **Creating Database & Tables:** Membuat database `olist_project` dan mendefinisikan skema 9 tabel sesuai dengan tipe data yang tepat.
+* **Constraints Setup:** Menetapkannya *Primary Key* (PK) dan *Foreign Key* (FK) untuk menjaga integritas relasional antar-tabel.
+
+### 2. Data Quality Assessment (DQA)
+* **Null Value Check:** Identifikasi kolom dengan nilai yang hilang (*missing values*), terutama pada tanggal pengiriman dan skor ulasan.
+* **Duplicate Check:** Pemeriksaan duplikasi pada ID unik (seperti `order_id` dan `customer_id`).
+* **Data Validation:** Memastikan inkonsistensi data, seperti tanggal pengiriman yang mendahului tanggal pemesanan atau format teks kategori.
+
+### 3. Data Cleaning
+* **Handling Nulls:** Penanganan nilai *null* secara spesifik (misal: imputasi, *flagging*, atau mengeklusi transaksi yang dibatalkan dari perhitungan durasi pengiriman).
+* **Handling Duplicates:** Pembersihan data ganda untuk memastikan agregasi *revenue* dan jumlah pesanan akurat.
+
+### 4. Exploratory Data Analysis (EDA) & Business Analysis
+* **Data Understanding:** Eksplorasi awal untuk memahami distribusi statistik, rentang periode data (2016–2018), dan tren umum transaksi.
+* **Answering Key Business Questions:** Mengeksekusi *query* SQL tingkat lanjut (`JOINs`, `CTEs`, `Window Functions`) untuk menjawab 5 pilar pertanyaan bisnis yang telah ditetapkan
+
+## 5. Insight Utama & Temuan Bisnis
+
+### 5.1 Performa Bisnis Secara Keseluruhan
+Olist berhasil mencatatkan sekitar **96 ribu transaksi** dari **96 ribu pembeli unik**, dengan total nilai transaksi mencapai **15,8 juta**.
+* **Penjualan Naik-Turun:** Tren penjualan tidak tumbuh mulus, melainkan mengalami naik-turun dari bulan ke bulan (MoM).
+* **Bukan Cuma dari Satu Segmen:** Pendapatan Olist tersebar di banyak kategori produk dan volume pesanan, bukan hanya bergantung pada satu jenis barang saja.
+
+> **Implikasi Bisnis:**
+> Olist sudah punya modal besar dalam menarik pembeli baru. Namun, tantangan terbesarnya adalah menjaga tren penjualan agar tetap stabil. Kuncinya ada pada dua hal: menjaga ketersediaan produk terlaris dan membuat pembeli mau datang kembali.
+
+---
+
+### 5.2 Performa Kategori & Produk
+Penjualan terbanyak didominasi oleh beberapa kategori favorit, meskipun variasi produk yang dijual di platform sebenarnya sangat luas.
+* **Kategori Unggulan Jadi Kunci:** Produk yang menyumbang pendapatan terbesar perlu terus dipantau stok dan ketersediaannya. terdapat 5 produk kategory yang memberikan _total sales_ terbanyak (health_beauty,watches_gifts,bed_bath_table,sports_leisure,computers_accessories)
+* **Ada Data Kategori yang Hilang:** Terdapat **610 produk** yang tidak memiliki label kategori (berdampak pada 1.451 pesanan).
+* **Dampaknya Masih Tergolong Kecil:** Isu data hilang ini hanya mencakup sekitar **1,31% dari total penjualan**, jadi tidak mengganggu gambaran besar analisis.
+* 
+
+> **Implikasi Bisnis:**
+> Secara keseluruhan data kategori Olist sangat bisa diandalkan. Untuk produk yang kategorinya hilang, kita cukup mengelompokkannya ke dalam label *Uncategorized* di laporan tanpa perlu membuang datanya.
+
+---
+
+### 5.3 Retensi & Nilai Pelanggan (Temuan Paling Krusial)
+Di bagian inilah masalah terbesar sekaligus peluang terbesar Olist terungkap:
+
+* **Hampir Semua Pembeli Cuma Belanja Sekali:** **96,88% pelanggan** tidak pernah kembali lagi setelah pembelian pertama.
+* **Hanya 3,12% yang Jadi Pembeli Setia (*Repeat Customer*).**
+* **Pembeli Setia Jauh Lebih Loyal & Beli Lebih Banyak:**
+  * Pembeli 1x (*One-time customer*): Rata-rata belanja **161,49**
+  * Pembeli Setia (*Repeat customer*): Rata-rata belanja **310,49** (hampir 2x lipat!)
+* **Kontribusi Penjualan Masih Kecil:** Karena jumlahnya sangat sedikit, pembeli setia baru menyumbang **5,71% dari total omzet**.
+* **Perilaku Pembeli Setia:**
+  * **52,91%** mencoba membeli produk dari kategori yang berbeda.
+  * **47,09%** memilih membeli barang di kategori yang sama.
+
+> **Implikasi Bisnis:**
+> Masalah utama Olist bukan kurang promosi untuk cari pembeli baru, melainkan **gagal menahan pembeli agar mau belanja lagi**. Padahal, satu pembeli setia nilainya jauh lebih besar dibanding pembeli baru. Menarik pembeli lama untuk transaksi kedua jauh lebih menguntungkan.
+
+---
+
+### 5.4 Kondisi Mitra Penjual (*Seller*)
+Kabar baiknya, pendapatan Olist tidak menumpuk di sedikit penjual saja.
+* **Pendapatan Tersebar Merata:** 10 *seller* teratas hanya menyumbang **12,80% penjualan**, dan Top 20 *seller* menyumbang **20,85%**. Olist tidak bergantung pada segelintir *seller* raksasa.
+* **Isu Pembatalan Pesanan (*Cancellation*):** Ada beberapa *seller* yang memiliki persentase pembatalan pesanan cukup tinggi.
+* **Harus Cermat Melihat Data:** Persentase pembatalan tinggi sering kali terjadi pada *seller* yang jumlah pesanannya cuma sedikit (misal: batal 1 dari 2 pesanan = 50% *cancellation rate*). Jadi, ini tidak selalu berarti masalah besar.
+
+> **Implikasi Bisnis:**
+> Olist relatif aman dari risiko ketergantungan pada *seller* tertentu. Risiko yang ada lebih ke arah ketidakkonsistenan kualitas layanan dari *seller-seller* tertentu.
+
+---
+
+### 5.5 Pembatalan Pesanan & Impact pada Omzet
+Tingkat pembatalan pesanan tidak merata di seluruh platform.
+* Beberapa kategori produk dan *seller* memang punya tingkat pembatalan yang lebih tinggi dari rata-rata.
+* Namun, secara keseluruhan, pembatalan pesanan bukanlah masalah utama yang merusak bisnis Olist jika dibandingkan dengan masalah pengiriman dan retensi pembeli.
+
+> **Implikasi Bisnis:**
+> Olist tidak perlu membuat aturan baru yang memberatkan semua *seller*. Cukup fokus menegur atau memantau *seller-seller* tertentu yang tingkat pembatalannya memang sangat parah dan merugikan omzet.
+
+---
+
+### 5.6 Pengiriman Barang & Kepuasan Pembeli (Temuan Terkuat)
+Pengiriman adalah faktor nomor satu yang menentukan senang atau kecewanya pembeli Olist:
+
+* **8,11% Pesanan Mengalami Keterlambatan.**
+* Rata-rata waktu kirim aktual adalah **12,5 hari** (jauh lebih cepat dibanding janji estimasi awal yang rata-rata 23,7 hari).
+* Meski mayoritas paket sampai tepat waktu, **paket yang terlambat langsung menghancurkan nilai ulasan (*rating*)**.
+
+| Status Pengiriman | Rata-Rata Rating | Persentase Rating Buruk (Bintang 1–2) |
+| :--- | :---: | :---: |
+| **Tepat Waktu (*On Time*)** | **4,29** | **9,26%** |
+| **Terlambat (*Late*)** | **2,57** | **54,12%** |
+
+Paket yang terlambat memiliki peluang **5,8 kali lebih besar** untuk mendapat ulasan buruk dari pembeli.
+
+> **Implikasi Bisnis:**
+> Ada hubungan yang sangat kuat antara keterlambatan pengiriman dengan kekecewaan pembeli. Memperbaiki masalah logistik adalah cara tercepat dan paling ampuh bagi Olist untuk meningkatkan kepuasan pelanggan.
+
+---
+
+### 5.7 Ringkasan Prioritas Bisnis
+
+Berdasarkan seluruh hasil analisis, berikut adalah urutan prioritas yang harus ditangani Olist:
+
+| Prioritas | Isu Bisnis | Bukti Data | Tingkat Dampak |
+| :---: | :--- | :--- | :--- |
+| 🔴 **1** | **Keandalan Pengiriman** | 8,11% paket terlambat; 54,12% dapat rating buruk | **Sangat Tinggi** (merusak reputasi) |
+| 🔴 **2** | **Retensi Pembeli** | Cuma 3,12% yang belanja lagi | **Sangat Tinggi** (potensi omzet terbuang) |
+| 🟠 **3** | **Isu Operasional Seller** | Ada *seller* dengan angka pembatalan ekstrem | **Sedang** (perlu pemantauan khusus) |
+| 🟢 **4** | **Konsentrasi Seller** | Top 20 seller cuma menguasai 20,85% omzet | **Rendah** (ekosistem sudah sehat) |
+
+---
+
+## 6. Rekomendasi Langkah Konkret
+
+### 6.1 Perbaiki Keandalan Pengiriman Barang
+* **Temuan:** Paket yang terlambat membuat rating merosot drastis (rating rata-rata turun dari 4,29 ke 2,57).
+* **Rekomendasi:**
+  * Buat sistem peringatan dini untuk pesanan yang mendekati batas waktu estimasi kirim.
+  * Pantau performa *seller* dan jasa ekspedisi yang paling sering terlambat.
+* **KPI yang Dipantau:** *Late Delivery Rate*, *Average Delivery Days*, *Low-score Review Rate*.
+* **Hasil yang Diharapkan:** Menekan angka keterlambatan kirim akan langsung mengurangi ulasan bintang 1 dan 2 secara signifikan.
+
+### 6.2 Buat Pembeli Baru Mau Belanja Kembali
+* **Temuan:** Baru 3,12% pembeli yang mau transaksi lagi, padahal pembeli setia belanja hingga 310,49 (dibanding 161,49 pada pembeli baru).
+* **Rekomendasi:**
+  * Kirimkan voucher diskon atau penawaran khusus beberapa hari setelah barang pertama diterima.
+  * Berikan rekomendasi produk yang relevan berdasarkan barang yang baru saja mereka beli.
+* **KPI yang Dipantau:** *Repeat Customer Rate*, *Second-Purchase Conversion Rate*, *Revenue per Customer*.
+* **Hasil yang Diharapkan:** Menaikkan persentase pembeli kedua akan meningkatkan pendapatan Olist tanpa perlu keluar biaya iklan besar untuk cari pembeli baru.
+
+### 6.3 Dorong Pembelian Lintas Kategori
+* **Temuan:** Lebih dari separuh pembeli setia (52,91%) mencoba membeli barang dari kategori yang berbeda pada transaksi selanjutnya.
+* **Rekomendasi:**
+  * Manfaatkan fitur rekomendasi *cross-selling* di aplikasi/website (misal: Pembeli HP diajak membeli aksesori atau elektronik lain).
+* **KPI yang Dipantau:** *Cross-category Repeat Rate*, *Average Categories Purchased per Customer*.
+* **Hasil yang Diharapkan:** Nilai keranjang belanja (*basket size*) pembeli akan meningkat karena mereka membeli lebih banyak variasi barang.
+
+### 6.4 Tegur *Seller* yang Bermasalah
+* **Temuan:** Ada beberapa *seller* dengan angka pembatalan yang sangat tinggi dan merugikan pembeli.
+* **Rekomendasi:**
+  * Buat sistem penilaian *seller* yang menggabungkan: **Volume Pesanan + Tingkat Pembatalan + Keterlambatan Kirim**.
+  * Berikan sanksi atau pendampingan khusus hanya kepada *seller* yang bervolume besar tapi layanannya buruk.
+* **KPI yang Dipantau:** *Seller Cancellation Rate*, *Canceled Orders*, *Late Delivery Rate*.
+* **Hasil yang Diharapkan:** Pelayanan platform meningkat tanpa perlu memberatkan *seller-seller* kecil yang sebenarnya tidak bermasalah.
+
+### 6.5 Pertahankan Keberagaman *Seller*
+* **Temuan:** Penjualan Olist sudah sangat aman dan tidak didominasi oleh sedikit *seller* besar (Top 20 *seller* hanya menguasai ~20% omzet).
+* **Rekomendasi:**
+  * Pertahankan ekosistem yang sehat ini dan terus dorong *seller* baru untuk bergabung.
+* **KPI yang Dipantau:** *Top 10 & Top 20 Seller Sales Contribution*.
+* **Hasil yang Diharapkan:** Bisnis Olist tetap stabil dan tidak rentan jika ada satu atau dua *seller* besar yang hengkang dari platform.
+
+---
+
+## Kesimpulan Akhir
+
+Dari seluruh analisis ini, masalah terbesar Olist ternyata bukan pada akuisisi *seller* atau penumpukan pendapatan pada pihak tertentu. Peluang terbesar Olist ada pada dua hal: **menjaga pengiriman agar tidak terlambat** dan **membuat pembeli baru mau bertransaksi kembali**. Saat ini, baru 3,12% pembeli yang kembali belanja, padahal pembeli setia menyumbang nilai transaksi dua kali lipat lebih besar. Di sisi lain, paket yang terlambat terbukti merusak kepuasan pelanggan secara drastis (54,12% menghasilkan ulasan buruk). Dengan memfokuskan perbaikan pada keandalan pengiriman serta strategi retensi pelanggan, Olist dapat meningkatkan pendapatan dan reputasi platform secara berkelanjutan.
