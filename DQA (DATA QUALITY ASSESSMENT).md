@@ -2,14 +2,24 @@
 * DATA QUALITY ASSESSMENT (DQA) - OLIST E-COMMERCE DATASET
 * Database : olist_project
 * Tool     : PostgreSQL
-  
+
+```text
+├── 1. STRUKTUR QUERY UNTUK TAHAP DQA
+├── 2. IMPLEMENTASI QUERY PADA MASING-MASING TABEL OLIST
+│   ├── Data Overview (Cek sampel & jumlah baris)
+│   ├── Missing Values Check (Cek kolom ber-NULL)
+│   ├── Duplication Check (Cek duplikasi pada Primary Key)
+│   └── DATA VALIDITY CHECK CHECK (Cek logika & keabsahan nilai)
+│
+├── 3. QDA FINDING
+```
   Tahapan DQA:
   1. Data Overview (Cek sampel & jumlah baris)
   2. Missing Values Check (Cek kolom ber-NULL)
   3. Duplication Check (Cek duplikasi pada Primary Key)
   4. DATA VALIDITY CHECK CHECK (Cek logika & keabsahan nilai)
   
-## STRUKTUR QUERY UNTUK TAHAP DQA
+## STRUKTUR QUERY YANG DIGUNAKAN UNTUK TAHAP DQA
 
 **1. Overview**
 ```sql
@@ -547,5 +557,8 @@ terdapat null sebanyak 610 `product_category_name`begitu pula pada `product_name
 * 23 anomali tanggal tidak termasuk kedalam 166 atau terpisah, sehingga totalnya adalah 189
 <img width="402" height="141" alt="image" src="https://github.com/user-attachments/assets/a97a3785-e959-4da1-afbb-1ba366a0b298" />
 
-### order_items
+### ORDER_PAYMENTS
+* terdapat 2 `order_id` dengan payment_instalments < 1
+<img width="1159" height="139" alt="image" src="https://github.com/user-attachments/assets/f01cbc1d-ab1f-48ae-bcdf-ece7f72565dc" />
+
 
