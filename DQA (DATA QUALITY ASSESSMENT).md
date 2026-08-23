@@ -12,45 +12,53 @@
 ## STRUKTUR QUERY UNTUK TAHAP DQA
 
 **1. Overview**
-
+```
 SELECT * FROM <table_name> LIMIT 10;
 SELECT COUNT(*) AS total_rows FROM <table_name>;
-
+```
 **2. Missing Values (PostgreSQL Trick)**
 
 **version 1**
+```
 SELECT
 COUNT(*) AS total_NULL
 FROM <table_name>
 WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4> is null;
-**-- OR** 
+```
+** OR** 
+```
 SELECT *
 FROM <table_name>
 WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4>
-
+```
 **version 2**
+```
 SELECT 
     COUNT(*) AS total_rows,
     COUNT(*) - COUNT(<column_1>) AS <column_1>_null_count,
     COUNT(*) - COUNT(<column_2>) AS <column_2>_null_count
 FROM <table_name>;
-
+```
 **version 3**
+```
 SELECT 
     COUNT(*) AS total_rows,
     COUNT(order_approved_at) AS filled_rows,
     SUM(CASE WHEN order_approved_at IS NULL THEN 1 ELSE 0 END) AS null_count,
     round((avg(CASE WHEN order_approved_at IS NULL THEN 1 ELSE 0 END))*100,2) AS null_percentage
 FROM orders;
-
+```
 **3. Duplication Check**
+
 **version 1**
+```
 SELECT 
     COUNT(*) - COUNT(DISTINCT <column_1>) AS <column_1>_duplicat_count,
     COUNT(*) - COUNT(DISTINCT <column_2>) AS <column_2>_duplicat_count
 FROM <table_name>;
-
+```
 **version 2**
+```
 SELECT
     <column_1>,
     COUNT(*) AS duplicate_count
@@ -58,10 +66,12 @@ FROM <table_name>
 GROUP BY 1
 HAVING COUNT(*) > 1
 ORDER BY duplicate_count DESC;
-
+```
 **4. Data Validity Check**
+```
 SELECT COUNT(*) FILTER (WHERE <column_numeric> < 0) AS invalid_negative_values
 FROM <table_name>;
+```
 
 ## IMPLEMENTASI PADA TABEL OLIST
 ### 1. TABEL: product_categories
