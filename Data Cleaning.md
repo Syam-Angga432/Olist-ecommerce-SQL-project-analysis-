@@ -1,1 +1,3 @@
+# DATA CLEANING - OLIST E-COMMERCE DATASET
 
+## temuan pada tahap DQA 
