@@ -152,4 +152,17 @@ FROM order_payments;
 **hasil:**
 <img width="232" height="50" alt="image" src="https://github.com/user-attachments/assets/bedb34b7-9a05-42b2-83de-23216bcb59af" />
 
+### ANALISIS TABEL LOGIC
+```text
+├── 1. RAW DATA (QDA)
+│   ├─ product_categories
+│   ├─ products
+│   ├─ orders
+│   └── order_payments
+└── 2. CLEAN DATA (EDA / ANALYSIS)
+    ├── product_categories _v2
+    ├── products_clean
+    ├── orders_clean
+    └── order_payments_clean
+```
 
