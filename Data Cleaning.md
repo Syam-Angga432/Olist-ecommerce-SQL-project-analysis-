@@ -76,4 +76,77 @@ FROM products;
 <img width="239" height="53" alt="image" src="https://github.com/user-attachments/assets/66441000-cdd8-4230-b97e-cef1844bbd33" />
 
 ### orders
+* null `order_approved_at`, `order_delivered_carrier_date`,`order_delivered_customer_date` lebih baik dibirkan saja, karena Menjaga Integritas Analisis SLA / Durasi Logistik serta membuat sistem sengaja mengabaikannya (exclude) saat perhitungan durasi pengiriman. namun bila ingin tetap melakukan cleaning pada timestamp yang paling mungkin adalah pada `order_approved_at` karena selisih waktunya tipis dengan order_purchase_timestamp.
+* `invalid_carrier_delivery` dan `invalid_delivery_sequence` dikarenakan urutan timestamp yang salah akan di null-kan dikarenakan tidak bisa sembarangan menentukan durasi masing-masing order dan tetap Menjaga Integritas Analisis SLA.
+
+```sql
+CREATE TABLE orders_clean AS
+WITH avg_approval AS (
+    -- Menghitung rata-rata durasi approval untuk pesanan 'delivered'
+    SELECT AVG(order_approved_at - order_purchase_timestamp) AS avg_duration
+    FROM orders
+    WHERE order_status = 'delivered'
+      AND order_approved_at IS NOT NULL
+      AND order_purchase_timestamp IS NOT NULL),
+step1_impute_and_clean_carrier AS (
+    -- Tahap 1: Imputasi order_approved_at + Pembersihan order_delivered_carrier_date
+    SELECT 
+        order_id,
+        customer_id,
+        order_status,
+        order_purchase_timestamp,
+        -- Imputasi approval date untuk status 'delivered'
+        CASE 
+            WHEN order_status = 'delivered' AND order_approved_at IS NULL 
+            THEN order_purchase_timestamp + (SELECT avg_duration FROM avg_approval)
+            ELSE order_approved_at
+        END AS order_approved_at,
+        -- Pembersihan carrier_date (harus >= purchase_timestamp)
+        CASE 
+            WHEN order_delivered_carrier_date >= order_purchase_timestamp
+            THEN order_delivered_carrier_date
+            ELSE NULL
+        END AS order_delivered_carrier_date,
+        order_delivered_customer_date,
+        order_estimated_delivery_date
+    FROM orders)
+-- Tahap 2: Pembersihan customer_date menggunakan carrier_date yang SUDAH BERSIH dari Tahap 1
+SELECT 
+    order_id,
+    customer_id,
+    order_status,
+    order_purchase_timestamp,
+    order_approved_at,
+    order_delivered_carrier_date,
+    -- Pembersihan customer_date
+    CASE 
+        WHEN order_delivered_customer_date >= order_purchase_timestamp
+        AND (order_delivered_carrier_date IS NULL 
+        OR order_delivered_customer_date >= order_delivered_carrier_date)
+        THEN order_delivered_customer_date
+        ELSE NULL
+        END AS order_delivered_customer_date,
+        order_estimated_delivery_date
+FROM step1_impute_and_clean_carrier;
+```
+**hasil:**
+<img width="498" height="50" alt="image" src="https://github.com/user-attachments/assets/79d9e4be-9e9d-4f6e-81aa-1e7eb64c645b" />
+
+### ORDER_PAYMENTS
+credit_card, payment_installments = 0 di ubah menjadi 1, Nilai 0 pada pembayaran kartu kredit merupakan anomali logika (data entry anomaly)
+```sql
+CREATE OR REPLACE VIEW order_payments_clean AS
+SELECT
+    order_id,
+    payment_sequential,
+    payment_type,
+    CASE
+        WHEN payment_type = 'credit_card'
+             AND payment_installments < 1
+        THEN NULL
+        ELSE payment_installments
+    END AS payment_installments,
+    payment_value
+FROM order_payments;
+```
 
