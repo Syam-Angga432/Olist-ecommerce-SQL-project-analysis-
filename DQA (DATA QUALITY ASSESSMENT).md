@@ -559,6 +559,9 @@ terdapat null sebanyak 610 `product_category_name`begitu pula pada `product_name
 
 ### ORDER_PAYMENTS
 * terdapat 2 `order_id` dengan payment_instalments < 1
+
+<img width="235" height="50" alt="image" src="https://github.com/user-attachments/assets/16d68237-2080-435d-94d4-4cec8c52f157" />
+
 <img width="1159" height="139" alt="image" src="https://github.com/user-attachments/assets/f01cbc1d-ab1f-48ae-bcdf-ece7f72565dc" />
 
 
