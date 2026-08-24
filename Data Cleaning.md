@@ -149,4 +149,7 @@ SELECT
     payment_value
 FROM order_payments;
 ```
+**hasil:**
+<img width="232" height="50" alt="image" src="https://github.com/user-attachments/assets/bedb34b7-9a05-42b2-83de-23216bcb59af" />
+
 
