@@ -2,6 +2,7 @@
 Pada tahap ini, analisis dilakukan menggunakan kueri SQL tingkat lanjut (`JOINs`, `CTEs`, `Window Functions`, dan `Aggregations`) untuk mengekstrak *insight* dari database `olist_project`.
 
 ## EDA 1 OVERALL BUSINESS PERFORMANCE
+### 
 ```sql
 -- 1. total orders (Seberapa besar volume bisnis Olist dalam dataset?)
 SELECT
@@ -28,4 +29,5 @@ SELECT
     SUM(freight_value) AS total_freight
 FROM order_items;
 ```
+
 
