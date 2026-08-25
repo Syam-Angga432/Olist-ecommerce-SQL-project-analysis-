@@ -10,7 +10,7 @@ Menggunakan PostgreSQL, analisis dilakukan dengan menggabungkan dan mengagregasi
 
 > **Catatan Metrik:** Untuk mencerminkan *realized revenue* dan performa operasional yang bersih, seluruh metrik transaksi dihitung berdasarkan pesanan dengan status **`delivered`**. Angka total ekosistem keseluruhan (*all order statuses*) dicantumkan sebagai referensi skop data.
 
-| Kategori Metrik | Key Metric | Nilai (Delivered Only) | Total Ekosistem (All Statuses) | Penjelasan |
+| metrics kategory | Key Metric | value (Delivered Only/completed order) | overall (All Statuses) | description |
 | :--- | :--- | :---: | :---: | :--- |
 | **Financial** | **total transaction value** | **R$ 15.419.773,75** | R$ 15.843.553,24 | Total nilai transaksi terkirim (Produk + biaya pengiriman) |
 | | **Product Sales** | **R$ 13.221.498,11** | R$ 13.591.643,70 | Nilai total produk  |
