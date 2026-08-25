@@ -4,6 +4,29 @@ Proyek ini menganalisis dataset publik dari Olist—platform marketplace e-comme
 
 Menggunakan PostgreSQL, analisis dilakukan dengan menggabungkan dan mengagregasi 8 tabel data terelasi untuk mengekstrak business insight yang actionable. Hasil analisis ini memberikan gambaran menyeluruh tentang faktor-faktor penentu pertumbuhan revenue dan efisiensi rantai pasok Olist guna mendukung pengambilan keputusan berbasis data.
 
+---
+
+## 📊 Key Performance Metrics
+
+> **Catatan Metrik:** Untuk mencerminkan *realized revenue* dan performa operasional yang bersih, seluruh metrik transaksi dihitung berdasarkan pesanan dengan status **`delivered`**. Angka total ekosistem keseluruhan (*all order statuses*) dicantumkan sebagai referensi skop data.
+
+| Kategori Metrik | Key Metric | Nilai (Delivered Only) | Total Ekosistem (All Statuses) | Penjelasan |
+| :--- | :--- | :---: | :---: | :--- |
+| **Financial** | **total transaction value** | **R$ 15.419.773,75** | R$ 15.843.553,24 | Total nilai transaksi terkirim (Produk + biaya pengiriman) |
+| | **Product Sales** | **R$ 13.221.498,11** | R$ 13.591.643,70 | Nilai total produk  |
+| | **Average Order Value** | **R$ 159,83** | R$ 160,58 | Rata-rata nilai per transaksi terkirim |
+| | **Freight Ratio** | **14,26%** | 14,21% | Porsi biaya pengiriman dari total transaksi |
+| **Marketplace Scale**| **Total Orders** | **96.478** | 99.441 | Total transaksi |
+| | **Total Customers** | **93.099** | 96.096 | Jumlah pelanggan unik (*customer_unique_id*) |
+| | **Active Sellers** | **2.970** | 3.095 | Penjual yang berhasil menyelesaikan pesanan |
+| | **Items Sold** | **110.197** | 112.650 | Total unit barang terkirim |
+| **Quality & Ops** | **Customer Repeat Rate**| **3,12%** | - | Hanya 3,12% pelanggan yang belanja >1 kali |
+| | **Late Delivery Rate** | **8,11%** | - | Persentase pengiriman melewati estimasi |
+| | **Avg. Delivery Days** | **12,56 Hari** | - | Rata-rata durasi kirim (vs. estimasi 23,74 hari) |
+| | **Overall Review Score**| **4,15 / 5.00** | - | Skor kepuasan pelanggan rata-rata |
+
+---
+
 ## 2. Key Question
 ### Overall Business & Sales Dynamics:
 * Bagaimana kinerja bisnis Olist secara keseluruhan, dan bagaimana tren pertumbuhan penjualan berubah dari waktu ke waktu (MoM)?
@@ -37,24 +60,7 @@ Analisis ini menggunakan dataset publik dari Olist yang disimpan dalam database 
 ### Entity Relationship Diagram (ERD)
 <img width="2201" height="1049" alt="ERD" src="https://github.com/user-attachments/assets/ba3c0f30-ccdf-4162-85de-19a558ff006b" />
 
-## 4. Analysis Workflow & Methodology
-
-Proses analisis dilakukan secara terstruktur menggunakan PostgreSQL melalui 4 tahapan utama:
-
-### 1. Data Preparation
-* **Creating Database & Tables:** Membuat database `olist_project` dan mendefinisikan skema 9 tabel sesuai dengan tipe data yang tepat.
-* **Constraints Setup:** Menetapkannya *Primary Key* (PK) dan *Foreign Key* (FK) untuk menjaga integritas relasional antar-tabel.
-
-### 2. Data Quality Assessment (DQA)
-* **Null Value Check:** Identifikasi kolom dengan nilai yang hilang (*missing values*), terutama pada tanggal pengiriman dan skor ulasan.
-* **Duplicate Check:** Pemeriksaan duplikasi pada ID unik (seperti `order_id` dan `customer_id`).
-* **Data Validation:** Memastikan inkonsistensi data, seperti tanggal pengiriman yang mendahului tanggal pemesanan atau format teks kategori.
-
-### 3. Data Cleaning
-* **Handling Nulls:** Penanganan nilai *null* secara spesifik (misal: imputasi, *flagging*, atau mengeklusi transaksi yang dibatalkan dari perhitungan durasi pengiriman).
-* **Handling Duplicates:** Pembersihan data ganda untuk memastikan agregasi *revenue* dan jumlah pesanan akurat.
-
-## 4. Analysis Workflow & Methodology
+## 4. Analysis Workflow & Analytical approach
 
 Proses analisis dilakukan secara terstruktur menggunakan PostgreSQL melalui 4 tahapan utama:
 
@@ -75,7 +81,7 @@ Proses analisis dilakukan secara terstruktur menggunakan PostgreSQL melalui 4 ta
 * **Data Understanding:** Eksplorasi awal untuk memahami distribusi statistik, rentang periode data (2016–2018), dan tren umum transaksi.
 * **Answering Key Business Questions:** Mengeksekusi *query* SQL tingkat lanjut (`JOINs`, `CTEs`, `Window Functions`) untuk menjawab 5 pilar pertanyaan bisnis yang telah ditetapkan
 
-## 5. Insight Utama & Temuan Bisnis
+## 5. Key Finding
 
 ### 5.1 Performa Bisnis Secara Keseluruhan
 Olist berhasil mencatatkan sekitar **96 ribu transaksi** dari **96 ribu pembeli unik**, dengan total nilai transaksi mencapai **15,8 juta**.
@@ -215,3 +221,28 @@ Berdasarkan seluruh hasil analisis, berikut adalah urutan prioritas yang harus d
 ## Kesimpulan Akhir
 
 Dari seluruh analisis ini, masalah terbesar Olist ternyata bukan pada akuisisi *seller* atau penumpukan pendapatan pada pihak tertentu. Peluang terbesar Olist ada pada dua hal: **menjaga pengiriman agar tidak terlambat** dan **membuat pembeli baru mau bertransaksi kembali**. Saat ini, baru 3,12% pembeli yang kembali belanja, padahal pembeli setia menyumbang nilai transaksi dua kali lipat lebih besar. Di sisi lain, paket yang terlambat terbukti merusak kepuasan pelanggan secara drastis (54,12% menghasilkan ulasan buruk). Dengan memfokuskan perbaikan pada keandalan pengiriman serta strategi retensi pelanggan, Olist dapat meningkatkan pendapatan dan reputasi platform secara berkelanjutan.
+
+---
+
+## Keterbatasan (Limitations)
+
+- **Profitabilitas:** Dataset tidak memuat COGS (Harga Pokok Penjualan), komisi, biaya operasional, pajak, atau komponen biaya lainnya yang diperlukan untuk menghitung laba bersih (*true profit/net profit*).
+
+- **Definisi Pendapatan (*Revenue*):** Angka penjualan di laporan ini dihitung dari nilai total transaksi (GMV), bukan murni pendapatan komisi Olist (karena data skema komisi Olist tidak tersedia).
+
+- **Data Produk yang Hilang:** Terdapat 610 produk yang tidak memiliki informasi kategori. Data ini dikategorikan sebagai `uncategorized` pada lapisan analitis (*analytical layer*) dan tidak bisa didentifikasi secara secara pasti dengan data yang ada.
+
+- **Atribut Produk:** Beberapa detail informasi fisik produk memiliki *missing values* dan tidak diimputasi secara manual karena nilai aslinya tidak dapat diperkirakan secara andal serta tidak bersifat krusial untuk analisis utama.
+
+- **Kualitas Data Operasional:** Ditemukan beberapa ketidaksesuaian stempel waktu (*timestamp*) terkait pengiriman yang membuat inkonsistensi durasi.
+  
+- **Retensi Pelanggan:** Analisis pembelian berulang (*repeat purchase*) hanya mencerminkan aktivitas pelanggan selama periode dataset yang tersedia dan mungkin tidak merepresentasikan retensi jangka panjang.
+
+- **Kausalitas:** Analisis ini hanya menunjukkan pola hubungan antar data (asosiasi), bukan hubungan sebab-akibat langsung. terdapat kemungkinan ada faktor luar lain yang mempengaruhinya.
+
+- **Analisis Geografis & Biaya Pengiriman:** Analisis wilayah utamanya dilakukan pada tingkat *state* (provinsi), sementara data mengenai jarak pengiriman pasti, rute logistik, dan biaya pengiriman aktual tidak tersedia.
+
+## Data Source
+
+https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce  
+
