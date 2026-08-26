@@ -241,6 +241,8 @@ Dari seluruh analisis ini, masalah terbesar Olist ternyata bukan pada akuisisi *
 - **Kausalitas:** Analisis ini hanya menunjukkan pola hubungan antar data (asosiasi), bukan hubungan sebab-akibat langsung. terdapat kemungkinan ada faktor luar lain yang mempengaruhinya.
 
 - **Analisis Geografis & Biaya Pengiriman:** Analisis wilayah utamanya dilakukan pada tingkat *state* (provinsi), sementara data mengenai jarak pengiriman pasti, rute logistik, dan biaya pengiriman aktual tidak tersedia.
+  
+- **Tingkat Pengembalian Produk (Return Rate) Tidak Ada:** Dataset ini tidak memiliki indikator atau tabel khusus pengembalian barang/refund, sehingga *return rate* tidak bisa dihitung. Status pesanan dibatalkan (*canceled*) dan ulasan buruk tidak dijadikan patokan karena tidak selalu berarti barang dikembalikan.
 
 ## Data Source
 
