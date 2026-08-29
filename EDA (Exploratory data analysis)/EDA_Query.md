@@ -261,4 +261,180 @@ ORDER BY total_unique_products DESC
 LIMIT 10;
 ```
 ## EDA 4 CUSTOMER PERFORMANCE
-
+### customer purchase frequency(4.1)
+```sql
+WITH customer_orders AS (
+    SELECT
+        c.customer_unique_id,
+        COUNT(DISTINCT o.order_id) AS total_orders
+    FROM orders o
+    JOIN customers c
+        ON o.customer_id = c.customer_id
+    GROUP BY c.customer_unique_id)
+SELECT
+    total_orders,
+    COUNT(*) AS total_customers,
+    ROUND(
+        COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (),3) AS customer_percentage
+FROM customer_orders
+GROUP BY total_orders
+ORDER BY total_orders;
+```
+### repeat customer rate (4.2)
+```sql
+WITH customer_orders AS (
+    SELECT
+        c.customer_unique_id,
+        COUNT(DISTINCT o.order_id) AS total_orders
+    FROM orders o
+    JOIN customers c
+        ON o.customer_id = c.customer_id
+    GROUP BY c.customer_unique_id)
+SELECT
+    COUNT(*) AS total_customers,
+    COUNT(*) FILTER ( WHERE total_orders = 1) AS one_time_customers,
+    COUNT(*) FILTER (WHERE total_orders > 1) AS repeat_customers,
+    ROUND( COUNT(*) FILTER (WHERE total_orders > 1) * 100.0 / COUNT(*),2) AS repeat_customer_rate,
+	ROUND(COUNT(*) FILTER (WHERE total_orders = 1) * 100.0 / COUNT(*),2) AS one_time_customer_rate
+FROM customer_orders;
+```
+### customer revenue/customer VALUE (4.3)
+```sql
+WITH customer_sales AS (
+    SELECT
+    c.customer_unique_id,
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    COALESCE(SUM(oi.price + oi.freight_value), 0) AS total_sales
+FROM orders_clean o
+JOIN customers c
+    ON o.customer_id = c.customer_id
+LEFT JOIN order_items oi
+    ON o.order_id = oi.order_id
+GROUP BY c.customer_unique_id)
+SELECT
+    CASE
+        WHEN total_orders = 1 THEN 'One-time'
+        ELSE 'Repeat'
+    END AS customer_type,
+    COUNT(*) AS total_customers,
+    ROUND(SUM(total_sales), 2) AS total_sales,
+    ROUND(
+        SUM(total_sales) * 100.0
+        / SUM(SUM(total_sales)) OVER (),2) AS sales_contribution_pct,
+    ROUND(AVG(total_sales),2) AS average_customer_value
+FROM customer_sales
+GROUP BY
+    CASE
+        WHEN total_orders = 1 THEN 'One-time'
+        ELSE 'Repeat'
+    END
+ORDER BY total_sales DESC;
+```
+### customer repeat vs order status (4.4)
+```sql
+WITH customer_orders AS (
+    SELECT
+        c.customer_unique_id,
+        o.order_id,
+        o.order_status
+    FROM orders_clean o
+    JOIN customers c
+        ON o.customer_id = c.customer_id),
+customer_type AS (
+    SELECT
+        customer_unique_id,
+        COUNT(DISTINCT order_id) AS total_orders
+    FROM customer_orders
+    GROUP BY customer_unique_id)
+SELECT
+    CASE
+        WHEN ct.total_orders = 1 THEN 'One-time'
+        ELSE 'Repeat'
+    END AS customer_type,
+    co.order_status,
+    COUNT(DISTINCT co.order_id) AS total_orders,
+    ROUND( COUNT(DISTINCT co.order_id) * 100.0
+        / SUM(COUNT(DISTINCT co.order_id))
+          OVER (PARTITION BY
+              CASE
+                  WHEN ct.total_orders = 1 THEN 'One-time' ELSE 'Repeat'
+              END),2) AS status_percentage
+FROM customer_orders co
+JOIN customer_type ct
+    ON co.customer_unique_id = ct.customer_unique_id
+GROUP BY
+    CASE
+        WHEN ct.total_orders = 1 THEN 'One-time' ELSE 'Repeat'
+    END,
+    co.order_status
+ORDER BY
+    customer_type,
+    total_orders DESC;
+```
+### Same Category vs Cross Category Repeat
+```sql
+WITH customer_orders AS (
+    SELECT
+        c.customer_unique_id,
+        o.order_id,
+        o.order_purchase_timestamp,
+        ARRAY_AGG(DISTINCT p.product_category_name)
+            FILTER (WHERE p.product_category_name IS NOT NULL) AS categories
+    FROM orders_clean o
+    JOIN customers c
+        ON o.customer_id = c.customer_id
+    JOIN order_items oi
+        ON o.order_id = oi.order_id
+    JOIN products_clean p
+        ON oi.product_id = p.product_id
+    WHERE o.order_status = 'delivered'
+    GROUP BY
+        c.customer_unique_id,
+        o.order_id,
+        o.order_purchase_timestamp),
+  ordered_customers AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER ( PARTITION BY customer_unique_id ORDER BY order_purchase_timestamp) AS order_number
+    FROM customer_orders),
+repeat_customers AS (
+    SELECT
+        customer_unique_id
+    FROM ordered_customers
+    GROUP BY customer_unique_id
+    HAVING COUNT(*) > 1),
+first_orders AS (
+    SELECT
+        customer_unique_id,
+        categories AS first_categories
+    FROM ordered_customers
+    WHERE order_number = 1),
+later_orders AS (
+    SELECT
+        o.customer_unique_id,
+        o.categories
+    FROM ordered_customers o
+    JOIN repeat_customers r
+        ON o.customer_unique_id = r.customer_unique_id
+    WHERE o.order_number > 1),
+customer_repeat_behavior AS (
+    SELECT
+        f.customer_unique_id,
+        CASE
+            WHEN EXISTS (SELECT 1 
+						 FROM later_orders l 
+						 WHERE l.customer_unique_id = f.customer_unique_id AND l.categories && f.first_categories)
+            THEN 'Same Category'
+            ELSE 'Cross Category'
+        END AS repeat_behavior
+    FROM first_orders f
+    JOIN repeat_customers r
+        ON f.customer_unique_id = r.customer_unique_id)
+SELECT
+    repeat_behavior,
+    COUNT(*) AS repeat_customers,
+    ROUND( COUNT(*) * 100.0 / SUM(COUNT(*)) OVER (),2 ) AS percentage
+FROM customer_repeat_behavior
+GROUP BY repeat_behavior
+ORDER BY repeat_customers DESC;
+```
