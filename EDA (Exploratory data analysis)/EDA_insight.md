@@ -127,10 +127,43 @@ Olist tidak menunjukkan ketergantungan yang tinggi terhadap sejumlah kecil selle
 ### tujuan 
 
 ### Proses Analisis
-
+1. Menghitung delivery duration.
+2. Membandingkan actual delivery dengan estimated delivery.
+3. Mengklasifikasikan order menjadi:
+   * early/On Time
+   * Late
+4. Menghitung late delivery rate.
+5. menghitung sellers processing time
+7. mengidentifikasi dampak ke review score
+8. menghitung delivery performance untuk masing-masing state.
 ### finding
+- on time / early delivery memiliki persentasi yang jauh lebih tinggi dibandingkan late_delivery
+  
+| delivery_status | total_orders | percentage |
+|-----------------|--------------|------------|
+| Late            | 6534         | 6.77       |
+| On-Time / Early | 89913        | 93.23      |
+
+- Proses Penyiapan Pesanan (Seller Processing Time): Penjual membutuhkan waktu rata-rata 2,85 hari (~68,5 jam) untuk memproses pesanan dan menyerahkan barang ke pihak kurir sejak pembayaran dikonfirmasi.
+  
+| avg_seller_processing_days | avg_seller_processing_hours |
+|----------------------------|-----------------------------|
+| 2.85                       | 68.49                       |
+
+- Terdapat korelasi kuat antara keterlambatan pengiriman dan penurunan skor ulasan. Pesanan yang sampai tepat waktu atau lebih awal (On-Time / Early) mencatatkan rata-rata review score sebesar 4,29/5.00, sedangkan pesanan yang terlambat (Late) mengalami penurunan drastis menjadi 2,27/5.00 (turun sebesar 47,08%).
+
+| delivery_performance | total_orders | avg_review_score | count_5_star | count_1_star |
+|----------------------|--------------|------------------|--------------|--------------|
+| Late                 | 6381         | 2.27             | 1060         | 3444         |
+| On-Time / Early      | 89420        | 4.29             | 55994        | 5953         |
+
+- São Paulo (SP) mendominasi volume transaksi (46.441 pesanan) sekaligus menjadi wilayah paling efisien dengan durasi pengiriman 8,3 hari dan ongkir rata-rata R$ 15,11.
+- Negara bagian seperti MG, PR, DF, RS, dan SC menjaga konsistensi performa dengan On-Time Rate di atas 90–95% dan durasi pengiriman di bawah 15 hari.
 
 ### Output
-
+- Delivery Performance: 93.23% pesanan berhasil tiba tepat waktu atau lebih awal, sedangkan 6.77% mengalami keterlambatan.
+- Seller Processing: Rata-rata seller membutuhkan 2,85 hari (68,49 jam) sejak pembayaran dikonfirmasi hingga menyerahkan pesanan kepada kurir.
+- Customer Experience: Pesanan terlambat memiliki rata-rata review 2,27/5, dibandingkan 4,29/5 untuk pesanan On-Time/Early. Ini menunjukkan perbedaan yang sangat besar pada customer satisfaction.
+- Geographic Performance: São Paulo (SP) mendominasi volume dengan 46.441 orders, sekaligus menunjukkan performa delivery yang efisien dengan rata-rata durasi 8,3 hari dan freight rata-rata R$15,11. MG, PR, DF, RS, dan SC juga menunjukkan performa relatif baik dengan On-Time Rate >90–95%
 ### Kesimpulan
-
+Secara keseluruhan, performa delivery Olist tergolong baik, dengan 93,23% pesanan tiba tepat waktu atau lebih awal. Namun, keterlambatan tetap menjadi isu penting karena berkaitan kuat dengan penurunan customer satisfaction, ditunjukkan oleh rata-rata review 2,27 dibandingkan 4,29 pada pesanan On-Time/Early. Rata-rata seller processing time sebesar 2,85 hari menunjukkan bahwa proses fulfillment di sisi seller merupakan salah satu tahap yang perlu dipantau. Secara geografis, São Paulo menjadi kontributor volume terbesar sekaligus menunjukkan performa delivery yang efisien.
