@@ -444,6 +444,41 @@ FROM customer_repeat_behavior
 GROUP BY repeat_behavior
 ORDER BY repeat_customers DESC;
 ```
+### Customers Distribution
+```sql
+WITH customer_geography AS (
+    SELECT 
+        c.customer_state,
+        COUNT(DISTINCT c.customer_unique_id) AS total_customers,
+        COUNT(DISTINCT o.order_id) AS total_orders,
+        SUM(oi.price + oi.freight_value) AS total_sales
+    FROM customers c
+    JOIN orders_clean o 
+        ON c.customer_id = o.customer_id
+    JOIN order_items oi 
+        ON o.order_id = oi.order_id
+    WHERE o.order_status = 'delivered'
+    GROUP BY c.customer_state
+)
+SELECT 
+    customer_state,
+    total_customers,
+    total_orders,
+    ROUND(total_sales, 2) AS total_sales,
+    
+    -- % Konsentrasi Basis Pelanggan
+    ROUND(
+        (total_customers * 100.0 / SUM(total_customers) OVER ()), 
+        2
+    ) AS customer_share_pct,
+    -- % Kontribusi Penjualan (Revenue)
+    ROUND(
+        (total_sales * 100.0 / SUM(total_sales) OVER ()), 
+        2
+    ) AS revenue_share_pct
+FROM customer_geography
+ORDER BY total_customers DESC;
+```
 ## EDA 5 SELLERS PERFORMANCE 
 ### 20 Sellers by sales (5.1)
 ```sql
