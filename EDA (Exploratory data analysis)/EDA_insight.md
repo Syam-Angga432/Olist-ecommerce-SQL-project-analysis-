@@ -80,6 +80,7 @@ Memahami perilaku pembelian customer, tingkat repeat purchase, serta perbedaan n
 5. Menghitung repeat purchase rate.
 6. Membandingkan average customer value.
 7. Menganalisis pola repeat purchase.
+8. menghitung distribusi customer berdasarkan wilayah
 ### finding
 - Repeat customer rate hanya 3.12%.
 - 96.88% customer merupakan one-time customers.
@@ -89,7 +90,28 @@ Memahami perilaku pembelian customer, tingkat repeat purchase, serta perbedaan n
 - Repeat customers memiliki nilai rata-rata sekitar dua kali customer one-time.
 - 52.70% repeat customers melakukan pembelian lintas kategori.
 - 47.30% melakukan pembelian dalam kategori yang sama.
+- customer terbanyak berasal dari SP dengan total 39156 customers
+### Output
+- One-time vs repeat customer distribution
+- Repeat purchase rate
+- Average customer value
+- Same-category vs cross-category repeat behavior
+### Kesimpulan
+Customer retention merupakan salah satu peluang bisnis utama. Meskipun repeat customers hanya mencakup sebagian kecil customer, mereka memiliki average customer value yang jauh lebih tinggi dibandingkan one-time customers. Hal ini menunjukkan potensi ekonomi dari strategi peningkatan repeat purchase.
 
+## EDA 4 SELLERS PERFORMANCE
+### tujuan 
+Menilai konsentrasi sales pada seller dan mengidentifikasi seller yang menunjukkan indikasi operational issues.
+### Proses Analisis
+1. Menghitung sales per seller.
+2. Mengurutkan seller berdasarkan sales value dan volume.
+3. Menghitung kontribusi top sellers.
+4. mengidentifikasi detail informasil sellers.
+5. Menghitung seller cancellation rate.
+6. Membandingkan cancellation rate dengan order volume.
+### finding
+- terdapat perbedaan antara sellers dengan total sales value tertinggi dengan volume sales tertinggi
+- sellers dengan 
 ### Output
 
 ### Kesimpulan
