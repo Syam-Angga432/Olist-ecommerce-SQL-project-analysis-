@@ -154,35 +154,7 @@ WHERE o.order_status = 'delivered'
 GROUP BY 1
 ORDER BY total_transaction_value DESC;
 ```
-### TOTAL TRANSACTION VALUE / SALES BY CATEGORY (2.4)
-```sql
-WITH category_summary AS (
-    SELECT 
-        COALESCE(pc.product_category_name_english, 'Uncategorized') AS category,
-        COUNT(DISTINCT o.order_id) AS total_orders,
-        COUNT(oi.order_item_id) AS total_items,
-        SUM(oi.price) AS product_sales,
-        SUM(oi.freight_value) AS freight_value,
-        SUM(oi.price + oi.freight_value) AS total_sales
-    FROM products_clean p
-    JOIN order_items oi ON p.product_id = oi.product_id
-    left JOIN orders_clean o ON oi.order_id = o.order_id
-	left JOIN product_categories_v2 pc ON pc.product_category_name = p.product_category_name
-    WHERE o.order_status = 'delivered'
-    GROUP BY 1)
-SELECT 
-    category,
-    total_orders,
-    total_items,
-    ROUND(product_sales, 2) AS product_sales,
-    ROUND(freight_value, 2) AS freight_value,
-    ROUND(total_sales, 2) AS total_sales,
-    ROUND((total_sales / SUM(total_sales) OVER ()) * 100, 
-        2) AS sales_contribution_pct
-FROM category_summary
-ORDER BY total_sales DESC;
-```
-### TOTAL TRANSACTION VALUE / SALES BY PAYMENT METHOD (2.5)
+### TOTAL TRANSACTION VALUE / SALES BY PAYMENT METHOD (2.4)
 ```sql
 WITH payment_summary AS (
     SELECT 
@@ -204,6 +176,40 @@ FROM payment_summary
 ORDER BY total_revenue DESC;
 ```
 ## EDA 3 PRODUCT PERFORMANCE 
+### Top Product Category by value Sales
+```sql
+SELECT
+    COALESCE(pc.product_category_name_english, 'Unknown') AS category,
+    COUNT(DISTINCT oi.order_id) AS total_orders,
+    COUNT(*) AS total_items,
+    ROUND(SUM(oi.price), 2) AS product_sales,
+    ROUND(SUM(oi.freight_value), 2) AS freight_value,
+    ROUND(SUM(oi.price + oi.freight_value), 2) AS total_sales
+FROM order_items oi
+JOIN products_clean p
+    ON oi.product_id = p.product_id
+LEFT JOIN product_categories pc
+    ON p.product_category_name = pc.product_category_name
+GROUP BY COALESCE(pc.product_category_name_english, 'Unknown')
+ORDER BY 6 DESC;
+```
+### Top Product Category by volume sales
+```sql
+SELECT
+    COALESCE(pc.product_category_name_english, 'Unknown') AS category,
+    COUNT(DISTINCT oi.order_id) AS total_orders,
+    COUNT(*) AS total_items,
+    ROUND(SUM(oi.price), 2) AS product_sales,
+    ROUND(SUM(oi.freight_value), 2) AS freight_value,
+    ROUND(SUM(oi.price + oi.freight_value), 2) AS total_sales
+FROM order_items oi
+JOIN products_clean p
+    ON oi.product_id = p.product_id
+LEFT JOIN product_categories pc
+    ON p.product_category_name = pc.product_category_name
+GROUP BY COALESCE(pc.product_category_name_english, 'Unknown')
+ORDER BY 3 DESC;
+```
 ### TOP 10 PRODUCT BY SALES VOLUME (3.1)
 ```sql
 SELECT 
