@@ -28,30 +28,42 @@ Olist memiliki volume transaksi yang besar, yakni 99441 order dan 96096 total cu
 Menganalisis perkembangan penjualan dari waktu ke waktu dan mengidentifikasi pola pertumbuhan maupun penurunan sales.
 ### Proses Analisis
 1. Mengelompokkan transaksi berdasarkan bulan.
-2. Menghitung monthly sales.
-3. Menghitung monthly order volume.
-4. Menghitung Month-over-Month (MoM) growth.
-5. Mengidentifikasi periode dengan pertumbuhan dan penurunan terbesar.
+2. Menghitung monthly sales dan order volume.
+3. Menghitung Month-over-Month (MoM) growth.
+4. Mengidentifikasi periode dengan pertumbuhan dan penurunan terbesar.
+5. Menghitung Sales by State
+6. Menghitung Sales by Payment Method
 ### finding
 - Sales mengalami fluktuasi sepanjang periode observasi.
 - Terdapat periode dengan pertumbuhan maupun penurunan monthly sales.
 - MoM growth membantu mengidentifikasi perubahan performa jangka pendek.
+- total sales terbanyak adalah dari SP (state) dengan 40501 total orders dan 5769703.15 total transaction value
+- total sales terbanyakan menggunakan payment method credit 
 ### Output
 - Monthly Sales Trend
 - Monthly Order Trend
 - Monthly Sales + MoM Growth
+- sales by state
+- sales bu payment method
 ### Kesimpulan
 Sales Olist menunjukkan pola yang dinamis sepanjang periode observasi. Analisis MoM memberikan gambaran mengenai perubahan performa penjualan dari bulan ke bulan dan dapat digunakan untuk mengidentifikasi periode pertumbuhan maupun penurunan.
 
 ## EDA 3 PRODUCT PERFORMANCE
 ### tujuan 
-
+Mengidentifikasi kategori dan produk yang menjadi kontributor utama terhadap sales.
 ### Proses Analisis
-
+1. Menghubungkan orders, order_items, dan products.
+2. Menghitung sales per product category.
+3. Mengurutkan kategori berdasarkan sales.
+4. Mengidentifikasi top-performing categories.
 ### finding
-
+- Sales tidak terdistribusi secara merata antar kategori.
+- Beberapa kategori menjadi revenue drivers utama.
+- Terdapat perbedaan antara kategori dengan sales tinggi dan kategori dengan volume transaksi tinggi.
 ### Output
-
+- Sales by category
+- Top product categories
+- Product/category sales contribution
 ### Kesimpulan
 
 
