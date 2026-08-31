@@ -111,7 +111,26 @@ Menilai konsentrasi sales pada seller dan mengidentifikasi seller yang menunjukk
 6. Membandingkan cancellation rate dengan order volume.
 ### finding
 - terdapat perbedaan antara sellers dengan total sales value tertinggi dengan volume sales tertinggi
-- sellers dengan 
+- sellers dengan jumlah terbanyak dan sales value tertinggi terkonsentrasi pada wilayah (State) `SP`
+- Revenue relatif tidak terlalu terkonsentrasi pada sedikit seller.
+- Beberapa seller memiliki cancellation rate relatif tinggi.
+- Cancellation rate perlu dibaca bersama order volume. 
+### Output
+- Seller sales ranking
+- Top seller contribution
+- Seller cancellation rate
+- Seller operational performance
+### Kesimpulan
+Olist tidak menunjukkan ketergantungan yang tinggi terhadap sejumlah kecil seller. Risiko utama berada pada operational performance seller tertentu, terutama seller dengan kombinasi order volume yang signifikan dan cancellation rate yang tinggi.
+
+## EDA 5 DELIVERY PERFORMANCE
+### tujuan 
+
+### Proses Analisis
+
+### finding
+
 ### Output
 
 ### Kesimpulan
+
