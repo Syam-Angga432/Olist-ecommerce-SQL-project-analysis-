@@ -1,8 +1,8 @@
 # Exploratory Data Analysis (EDA) & Business Analysis
 Pada tahap ini, analisis dilakukan menggunakan kueri SQL tingkat lanjut (`JOINs`, `CTEs`, `Window Functions`, dan `Aggregations`) untuk mengekstrak *insight* dari database `olist_project`.
 
-## EDA 1 OVERALL BUSINESS PERFORMANCE 
-### Key Performance 
+## EDA 1 OVERALL BUSINESS PERFORMANCE  
+### Key Performance (1.1)
 ```sql
 -- 1. total orders (Seberapa besar volume bisnis Olist dalam dataset?)
 SELECT
@@ -29,7 +29,7 @@ SELECT
     SUM(freight_value) AS total_freight
 FROM order_items;
 ```
-### Base KPI
+### Base KPI (1.2)
 ``` sql
 SELECT
     -- (Order & Customer)
@@ -85,7 +85,7 @@ JOIN order_items oi
 GROUP BY o.order_status
 ORDER BY sales_including_freight DESC;
 ```
-### Base Metrics Completed orders / Delivered
+### Base Metrics Completed orders / Delivered (1.3)
 ```sql
 SELECT
     COUNT(DISTINCT o.order_id) AS completed_orders,
@@ -104,7 +104,7 @@ WHERE o.order_status = 'delivered';
 ```
 
 ## EDA 2 SALES PERFORMANCE
-### SALES TREND (MoM)
+### SALES TREND (MoM) (2.1)
 ```sql
 SELECT
     DATE_TRUNC('month', o.order_purchase_timestamp) AS month,
@@ -120,7 +120,7 @@ WHERE o.order_status = 'delivered'
 GROUP BY 1
 ORDER BY 1;
 ```
-### SALES GROWTH PERCENTAGE
+### SALES GROWTH PERCENTAGE (2.2)
 ```sql
 WITH monthly_sales AS (
     SELECT
@@ -140,7 +140,7 @@ SELECT
 FROM monthly_sales
 ORDER BY month;
 ```
-### TOTAL TRANSACTION VALUE / SALES BY STATE
+### TOTAL TRANSACTION VALUE / SALES BY STATE (2.3)
 ```sql
 SELECT 
     c.customer_state,
@@ -154,7 +154,7 @@ WHERE o.order_status = 'delivered'
 GROUP BY 1
 ORDER BY total_transaction_value DESC;
 ```
-### TOTAL TRANSACTION VALUE / SALES BY CATEGORY
+### TOTAL TRANSACTION VALUE / SALES BY CATEGORY (2.4)
 ```sql
 WITH category_summary AS (
     SELECT 
@@ -182,7 +182,7 @@ SELECT
 FROM category_summary
 ORDER BY total_sales DESC;
 ```
-### TOTAL TRANSACTION VALUE / SALES BY PAYMENT METHOD
+### TOTAL TRANSACTION VALUE / SALES BY PAYMENT METHOD (2.5)
 ```sql
 WITH payment_summary AS (
     SELECT 
@@ -203,8 +203,8 @@ SELECT
 FROM payment_summary
 ORDER BY total_revenue DESC;
 ```
-## EDA 3 PRODUCT PERFORMANCE
-### TOP 10 PRODUCT BY SALES VOLUME
+## EDA 3 PRODUCT PERFORMANCE 
+### TOP 10 PRODUCT BY SALES VOLUME (3.1)
 ```sql
 SELECT 
     p.product_id,
@@ -221,7 +221,7 @@ GROUP BY 1, 2
 ORDER BY total_items_sold DESC
 LIMIT 10;
 ```
-### TOP 10 PRODUCT BY SALES VALUE
+### TOP 10 PRODUCT BY SALES VALUE (3.2)
 ```sql
 select * from order_items;
 SELECT
@@ -246,7 +246,7 @@ GROUP BY
 ORDER BY 5 desc
 LIMIT 20;
 ```
-### top volume product in marketplace by category
+### top volume product in marketplace by category (3.3)
 ```sql
 SELECT 
     COALESCE(pc.product_category_name_english, 'Uncategorized') AS category_name,
@@ -371,7 +371,7 @@ ORDER BY
     customer_type,
     total_orders DESC;
 ```
-### Same Category vs Cross Category Repeat
+### Same Category vs Cross Category Repeat (4.5)
 ```sql
 WITH customer_orders AS (
     SELECT
@@ -438,4 +438,202 @@ FROM customer_repeat_behavior
 GROUP BY repeat_behavior
 ORDER BY repeat_customers DESC;
 ```
-00
+## EDA 5 SELLERS PERFORMANCE 
+### 20 Sellers by sales (5.1)
+```sql
+SELECT
+    s.seller_id,
+    COUNT(DISTINCT oi.order_id) AS total_orders,
+    COUNT(*) AS total_items,
+    ROUND(SUM(oi.price), 2) AS product_sales,
+    ROUND(SUM (oi.price)
+        / COUNT(DISTINCT oi.order_id),2) AS average_order_sales
+FROM sellers s
+JOIN order_items oi
+    ON s.seller_id = oi.seller_id
+JOIN orders_clean o
+    ON oi.order_id = o.order_id
+GROUP BY s.seller_id
+ORDER BY product_sales DESC
+LIMIT 20;
+```
+### sellers detail (5.2)
+```sql
+SELECT 
+    s.seller_id,
+    s.seller_state,
+    COUNT(DISTINCT oi.order_id) AS total_orders,
+    ROUND(SUM(oi.price), 2) AS total_revenue,
+    ROUND(AVG(orw.review_score), 2) AS avg_review_score,
+    
+    -- Distribusi Rating
+    COUNT(CASE WHEN orw.review_score = 5 THEN 1 END) AS count_5_star,
+    COUNT(CASE WHEN orw.review_score <= 2 THEN 1 END) AS count_low_star
+FROM sellers s
+JOIN order_items oi ON s.seller_id = oi.seller_id
+JOIN orders_clean o ON oi.order_id = o.order_id
+JOIN order_reviews orw ON o.order_id = orw.order_id
+WHERE o.order_status = 'delivered'
+GROUP BY s.seller_id, s.seller_state
+HAVING COUNT(DISTINCT oi.order_id) >= 20
+ORDER BY total_revenue DESC;
+```
+### segmentation sellers (5.3)
+```sql
+WITH seller_items AS (
+    SELECT 
+        s.seller_id,
+        COUNT(oi.order_item_id) AS total_items_sold,
+        COALESCE(SUM(oi.price), 0) AS total_sales
+    FROM sellers s
+    LEFT JOIN order_items oi ON s.seller_id = oi.seller_id
+    LEFT JOIN orders_clean o ON oi.order_id = o.order_id AND o.order_status = 'delivered'
+    GROUP BY s.seller_id),
+segmented_sellers AS (
+    SELECT 
+        seller_id,
+        total_items_sold,
+        total_sales,
+        CASE 
+            WHEN total_items_sold >= 100 THEN '1. High Volume (>= 100 items)'
+            WHEN total_items_sold BETWEEN 20 AND 99 THEN '2. Medium Volume (20-99 items)'
+            WHEN total_items_sold BETWEEN 1 AND 19 THEN '3. Low Volume (1-19 items)'
+            ELSE '4. Inactive (0 items sold)'
+        END AS seller_segment
+    FROM seller_items)
+SELECT 
+    seller_segment,
+    COUNT(seller_id) AS total_sellers,
+    ROUND(COUNT(seller_id) * 100.0 / SUM(COUNT(seller_id)) OVER (), 2) AS seller_share_pct,
+    ROUND(SUM(total_sales), 2) AS total_segment_sales
+FROM segmented_sellers
+GROUP BY seller_segment
+ORDER BY seller_segment ASC;
+```
+### sellers performance by cancelation rate (5.4)
+```sql
+WITH seller_orders AS (
+    SELECT 
+        oi.seller_id,
+        COUNT(DISTINCT o.order_id) AS total_orders_handled,
+        COUNT(DISTINCT CASE WHEN o.order_status = 'canceled' THEN o.order_id END) AS canceled_orders
+    FROM order_items oi
+    JOIN orders_clean o ON oi.order_id = o.order_id
+    GROUP BY oi.seller_id)
+SELECT 
+    seller_id,
+    total_orders_handled,
+    canceled_orders,
+    ROUND((canceled_orders * 100.0 / total_orders_handled), 2) AS cancellation_rate_pct
+FROM seller_orders
+WHERE total_orders_handled >= 10
+ORDER BY cancellation_rate_pct DESC
+limit 20;
+```
+### 10 sellers by rating stars (5.5)
+```sql
+SELECT 
+    s.seller_id,
+    s.seller_state,
+    COUNT(DISTINCT oi.order_id) AS total_orders,
+    ROUND(SUM(oi.price), 2) AS total_revenue,
+    ROUND(AVG(orw.review_score), 2) AS avg_review_score,
+    
+    -- Distribusi Rating
+    COUNT(CASE WHEN orw.review_score = 5 THEN 1 END) AS count_5_star,
+    COUNT(CASE WHEN orw.review_score <= 2 THEN 1 END) AS count_low_star
+FROM sellers s
+JOIN order_items oi ON s.seller_id = oi.seller_id
+JOIN orders_clean o ON oi.order_id = o.order_id
+JOIN order_reviews orw ON o.order_id = orw.order_id
+WHERE o.order_status = 'delivered'
+GROUP BY s.seller_id, s.seller_state
+HAVING COUNT(DISTINCT oi.order_id) >= 10
+ORDER BY total_revenue DESC;
+```
+## EDA 6 DELIVERY PERFORMANCE 
+### 1. Tingkat Keterlambatan Pengiriman (On-Time vs Late Delivery Rate) (6.1)
+```sql
+SELECT 
+    CASE 
+        WHEN DATE(order_delivered_customer_date) <= DATE(order_estimated_delivery_date) THEN 'On-Time / Early'
+        ELSE 'Late'
+    END AS delivery_status,
+    COUNT(order_id) AS total_orders,
+    ROUND(
+        COUNT(order_id) * 100.0 / SUM(COUNT(order_id)) OVER (), 2
+    ) AS percentage
+FROM orders_clean
+WHERE order_status = 'delivered'
+  AND order_delivered_customer_date IS NOT NULL
+  AND order_estimated_delivery_date IS NOT NULL
+GROUP BY 1;
+```
+### Efisiensi Pemrosesan Penjual (6.2)
+```sql
+SELECT 
+    ROUND(
+        AVG(EXTRACT(EPOCH FROM (order_delivered_carrier_date - order_approved_at)) / 86400)::numeric, 2
+    ) AS avg_seller_processing_days,
+    ROUND(
+        AVG(EXTRACT(EPOCH FROM (order_delivered_carrier_date - order_approved_at)) / 3600)::numeric, 2
+    ) AS avg_seller_processing_hours
+FROM orders_clean
+WHERE order_status = 'delivered'
+  AND order_approved_at IS NOT NULL
+  AND order_delivered_carrier_date IS NOT NULL
+  AND order_delivered_carrier_date >= order_approved_at;
+```
+### Durasi Transit Kurir (6.3) 
+```sql
+SELECT 
+    ROUND(
+        AVG(EXTRACT(EPOCH FROM (order_delivered_customer_date - order_delivered_carrier_date)) / 86400)::numeric, 2
+    ) AS avg_carrier_transit_days,
+    
+    -- Total Waktu Pengiriman Keseluruhan (Purchase to Customer Delivery)
+    ROUND(
+        AVG(EXTRACT(EPOCH FROM (order_delivered_customer_date - order_purchase_timestamp)) / 86400)::numeric, 2
+    ) AS avg_total_delivery_days
+FROM orders_clean
+WHERE order_status = 'delivered'
+  AND order_delivered_carrier_date IS NOT NULL
+  AND order_delivered_customer_date IS NOT NULL
+  AND order_delivered_customer_date >= order_delivered_carrier_date;
+```
+### Dampak Keterlambatan Terhadap Review Score (6.4)
+```sql
+SELECT 
+    CASE 
+        WHEN DATE(o.order_delivered_customer_date) <= DATE(o.order_estimated_delivery_date) THEN 'On-Time / Early'
+        ELSE 'Late'
+    END AS delivery_performance,
+    COUNT(DISTINCT o.order_id) AS total_orders,
+    ROUND(AVG(r.review_score), 2) AS avg_review_score,
+    COUNT(CASE WHEN r.review_score = 5 THEN 1 END) AS count_5_star,
+    COUNT(CASE WHEN r.review_score = 1 THEN 1 END) AS count_1_star
+FROM orders_clean o
+JOIN order_reviews r ON o.order_id = r.order_id
+WHERE o.order_status = 'delivered'
+  AND o.order_delivered_customer_date IS NOT NULL
+  AND o.order_estimated_delivery_date IS NOT NULL
+GROUP BY 1;
+```
+### Disparitas Wilayah & Ongkos kirim (6.5)
+```sql
+SELECT 
+    c.customer_state,
+    COUNT(o.order_id) AS total_orders,
+    ROUND(
+        (COUNT(CASE WHEN o.order_delivered_customer_date <= o.order_estimated_delivery_date THEN 1 END)::NUMERIC / COUNT(o.order_id)) * 100, 2
+    ) AS on_time_rate_pct,
+    ROUND(AVG(DATE_PART('day', o.order_delivered_customer_date - o.order_purchase_timestamp))::NUMERIC, 1) AS avg_delivery_days,
+    ROUND(AVG(oi.freight_value)::NUMERIC, 2) AS avg_freight_value
+FROM orders o
+JOIN customers c ON o.customer_id = c.customer_id
+JOIN order_items oi ON o.order_id = oi.order_id
+WHERE o.order_status = 'delivered'
+  AND o.order_delivered_customer_date IS NOT NULL
+GROUP BY c.customer_state
+ORDER BY avg_delivery_days DESC;
+```
