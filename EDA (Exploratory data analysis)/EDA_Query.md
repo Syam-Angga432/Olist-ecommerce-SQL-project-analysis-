@@ -592,6 +592,38 @@ GROUP BY s.seller_id, s.seller_state
 HAVING COUNT(DISTINCT oi.order_id) >= 10
 ORDER BY total_revenue DESC;
 ```
+### konsentrasi sellers per wilayah
+```sql
+WITH seller_state_sales AS (
+    SELECT 
+        s.seller_state,
+        COUNT(DISTINCT s.seller_id) AS total_active_sellers,
+        COUNT(DISTINCT oi.order_id) AS total_orders,
+        SUM(oi.price) AS product_sales,
+        SUM(oi.freight_value) AS freight_value,
+        SUM(oi.price + oi.freight_value) AS total_sales
+    FROM sellers s
+    JOIN order_items oi 
+        ON s.seller_id = oi.seller_id
+    JOIN orders_clean o 
+        ON oi.order_id = o.order_id
+    WHERE o.order_status = 'delivered'
+    GROUP BY s.seller_state
+)
+SELECT 
+    seller_state,
+    total_active_sellers,
+    total_orders,
+    ROUND(product_sales, 2) AS product_sales,
+    ROUND(freight_value, 2) AS freight_value,
+    ROUND(total_sales, 2) AS total_sales,
+    ROUND(
+        (total_sales * 100.0 / SUM(total_sales) OVER ()), 
+        2
+    ) AS sales_contribution_pct
+FROM seller_state_sales
+ORDER BY total_sales DESC;
+```
 ## EDA 6 DELIVERY PERFORMANCE 
 ### 1. Tingkat Keterlambatan Pengiriman (On-Time vs Late Delivery Rate) (6.1)
 ```sql
