@@ -54,16 +54,42 @@ Mengidentifikasi kategori dan produk yang menjadi kontributor utama terhadap sal
 ### Proses Analisis
 1. Menghubungkan orders, order_items, dan products.
 2. Menghitung sales per product category.
-3. Mengurutkan kategori berdasarkan sales.
-4. Mengidentifikasi top-performing categories.
+3. Mengurutkan kategori berdasarkan sales dan volume.
+4. Mengidentifikasi top-performing categories dan product.
 ### finding
 - Sales tidak terdistribusi secara merata antar kategori.
-- Beberapa kategori menjadi revenue drivers utama.
-- Terdapat perbedaan antara kategori dengan sales tinggi dan kategori dengan volume transaksi tinggi.
+- Beberapa kategori/produk menjadi revenue drivers utama.
+- Terdapat perbedaan antara kategori/produk dengan sales tinggi dan kategori/produk dengan volume transaksi tinggi.
 ### Output
 - Sales by category
 - Top product categories
+- Top product 
 - Product/category sales contribution
 ### Kesimpulan
+Beberapa kategori memberikan kontribusi signifikan terhadap sales Olist. Kategori dengan kontribusi tinggi perlu diperhatikan sebagai revenue drivers, sementara kategori dengan volume tinggi tetapi nilai transaksi relatif rendah perlu dievaluasi dari sisi product mix dan average order value
 
+## EDA 4 CUSTOMERS PERFORMANCE
+### tujuan 
+Memahami perilaku pembelian customer, tingkat repeat purchase, serta perbedaan nilai customer antara one-time dan repeat customers.
+### Proses Analisis
+1. Mengidentifikasi customer berdasarkan customer_unique_id.
+2. Menghitung jumlah order per customer.
+3. Mengelompokkan customer menjadi:
+4.  * one-time
+    * repeat
+5. Menghitung repeat purchase rate.
+6. Membandingkan average customer value.
+7. Menganalisis pola repeat purchase.
+### finding
+- Repeat customer rate hanya 3.12%.
+- 96.88% customer merupakan one-time customers.
+- Average customer value:
+  * One-time: 161.49
+  * Repeat: 310.49
+- Repeat customers memiliki nilai rata-rata sekitar dua kali customer one-time.
+- 52.91% repeat customers melakukan pembelian lintas kategori.
+- 47.09% melakukan pembelian dalam kategori yang sama.
 
+### Output
+
+### Kesimpulan
