@@ -87,8 +87,8 @@ Memahami perilaku pembelian customer, tingkat repeat purchase, serta perbedaan n
   * One-time: 161.49
   * Repeat: 310.49
 - Repeat customers memiliki nilai rata-rata sekitar dua kali customer one-time.
-- 52.91% repeat customers melakukan pembelian lintas kategori.
-- 47.09% melakukan pembelian dalam kategori yang sama.
+- 52.70% repeat customers melakukan pembelian lintas kategori.
+- 47.30% melakukan pembelian dalam kategori yang sama.
 
 ### Output
 
