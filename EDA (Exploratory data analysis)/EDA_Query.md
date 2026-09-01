@@ -652,7 +652,7 @@ WHERE order_status = 'delivered'
   AND order_delivered_carrier_date IS NOT NULL
   AND order_delivered_carrier_date >= order_approved_at;
 ```
-### Durasi Transit Kurir (6.3) 
+### Durasi Transit Kurir dan rata-rata pengiriman (6.3) 
 ```sql
 SELECT 
     ROUND(
