@@ -49,7 +49,7 @@ Menganalisis perkembangan penjualan dari waktu ke waktu dan mengidentifikasi pol
 Sales Olist menunjukkan pola yang dinamis sepanjang periode observasi. Analisis MoM memberikan gambaran mengenai perubahan performa penjualan dari bulan ke bulan dan dapat digunakan untuk mengidentifikasi periode pertumbuhan maupun penurunan.
 
 result : 
-* ![Montly sales trend](./screenshot/Montly_sales_trend.png)
+* [Montly sales trend](./screenshot/Montly_sales_trend.png)
 * [`screenshot/MoM_Growth.png`](./screenshot/MoM_Growth.png)
 
 
