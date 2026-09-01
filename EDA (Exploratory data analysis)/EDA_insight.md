@@ -48,6 +48,13 @@ Menganalisis perkembangan penjualan dari waktu ke waktu dan mengidentifikasi pol
 ### Kesimpulan
 Sales Olist menunjukkan pola yang dinamis sepanjang periode observasi. Analisis MoM memberikan gambaran mengenai perubahan performa penjualan dari bulan ke bulan dan dapat digunakan untuk mengidentifikasi periode pertumbuhan maupun penurunan.
 
+result : 
+* [`screenshot/Montly_sales_trend.png`](./screenshot/Montly_sales_trend.png)
+* [`screenshot/MoM_Growth.png`](./screenshot/MoM_Growth.png)
+
+
+
+
 ## EDA 3 PRODUCT PERFORMANCE
 ### tujuan 
 Mengidentifikasi kategori dan produk yang menjadi kontributor utama terhadap sales.
