@@ -37,8 +37,25 @@ Menganalisis perkembangan penjualan dari waktu ke waktu dan mengidentifikasi pol
 - Sales mengalami fluktuasi sepanjang periode observasi.
 - Terdapat periode dengan pertumbuhan maupun penurunan monthly sales.
 - MoM growth membantu mengidentifikasi perubahan performa jangka pendek.
-- total sales terbanyak adalah dari SP (state) dengan 40501 total orders dan 5769703.15 total transaction value
-- total sales terbanyakan menggunakan payment method credit 
+- total sales terbanyak adalah dari SP (sao paulo) dengan 40501 total orders dan 5769703.15 total transaction value
+
+| No    | customer_state | total_orders | total_transaction_value | avg_freight_cost |
+|-------|----------------|--------------|-------------------------|------------------|
+| 1     | SP             | 40501        | 5769703.15              | 15.12            |
+| 2     | RJ             | 12350        | 2055401.57              | 20.91            |
+| 3     | MG             | 11354        | 1818891.67              | 20.63            |
+| +24     | ...            | ...          | ...                     | ...              |
+
+  
+- total sales terbanyakan menggunakan payment method credit
+
+| payment_type | total_orders | total_transactions | total_revenue | revenue_contribution_pct |
+|--------------|--------------|--------------------|---------------|--------------------------|
+| credit_card  | 74304        | 74586              | 12101094.88   | 78.46                    |
+| boleto       | 19191        | 19191              | 2769932.58    | 17.96                    |
+| voucher      | 3679         | 5493               | 343013.19     | 2.22                     |
+| debit_card   | 1485         | 1486               | 208421.12     | 1.35                     |
+ 
 ### Output
 - Monthly Sales Trend
 - Monthly Order Trend
@@ -48,14 +65,11 @@ Menganalisis perkembangan penjualan dari waktu ke waktu dan mengidentifikasi pol
 ### Kesimpulan
 Sales Olist menunjukkan pola yang dinamis sepanjang periode observasi. Analisis MoM memberikan gambaran mengenai perubahan performa penjualan dari bulan ke bulan dan dapat digunakan untuk mengidentifikasi periode pertumbuhan maupun penurunan.
 
-result : 
-* [Montly sales trend](./screenshot/Montly_sales_trend.png)
-* [`screenshot/MoM_Growth.png`](./screenshot/MoM_Growth.png)
+reference : 
+<img src="../screenshot/Montly_sales_trend.png" width="45%">, <img src="../screenshot/MoM_Growth.png" width="37%">
 
 
-
-
-## EDA 3 PRODUCT PERFORMANCE
+## EDA 3 PRODUCT & CATEGORY PERFORMANCE
 ### tujuan 
 Mengidentifikasi kategori dan produk yang menjadi kontributor utama terhadap sales.
 ### Proses Analisis
@@ -64,9 +78,24 @@ Mengidentifikasi kategori dan produk yang menjadi kontributor utama terhadap sal
 3. Mengurutkan kategori berdasarkan sales dan volume.
 4. Mengidentifikasi top-performing categories dan product.
 ### finding
-- Sales tidak terdistribusi secara merata antar kategori.
+- jumlah kategori untuk high sales lebih rendah dari pada medium sales dan low sales. namun tetap memberikan kontribusi sales paling tinggi
+
+| sales_category | total_categories | min_product_sales | max_product_sales | total_segment_sales | keterangan              |
+|----------------|------------------|-------------------|-------------------|---------------------|-------------------------|
+| High Sales     | 14               | 323667.53         | 1258681.34        | 10094461.45         | (x >= 300.000)          |
+| Medium Sales   | 27               | 39669.61          | 273960.70         | 3168840.77          | (300.000 > x >= 30.000) |
+| Low Sales      | 31               | 283.29            | 29393.41          | 328341.48           | (x < 30.000)            |
+
+
 - Beberapa kategori/produk menjadi revenue drivers utama.
 - Terdapat perbedaan antara kategori/produk dengan sales tinggi dan kategori/produk dengan volume transaksi tinggi.
+
+kategori
+<img width="281" height="89" alt="image" src="https://github.com/user-attachments/assets/1b036c82-6605-4341-b093-d32c668b33fe" /> <img width="264" height="88" alt="image" src="https://github.com/user-attachments/assets/b58e89ac-8595-44a1-b3cb-2f0610625814" />
+
+produk
+<img width="356" height="93" alt="image" src="https://github.com/user-attachments/assets/bf991a5b-ed41-46eb-a674-cea06824b6d6" /> <img width="386" height="92" alt="image" src="https://github.com/user-attachments/assets/f914b842-e360-4353-9634-4739854362aa" />
+
 ### Output
 - Sales by category
 - Top product categories
@@ -89,15 +118,40 @@ Memahami perilaku pembelian customer, tingkat repeat purchase, serta perbedaan n
 7. Menganalisis pola repeat purchase.
 8. menghitung distribusi customer berdasarkan wilayah
 ### finding
+
+| total_customers | one_time_customers | repeat_customers | repeat_customer_rate | one_time_customer_rate |
+|-----------------|--------------------|------------------|----------------------|------------------------|
+| 96096           | 93099              | 2997             | 3.12                 | 96.88                  |
+
 - Repeat customer rate hanya 3.12%.
 - 96.88% customer merupakan one-time customers.
 - Average customer value:
-  * One-time: 161.49
-  * Repeat: 310.49
+  * One-time: 160.28
+  * Repeat: 307.66
+
+| customer_type | total_customers | total_sales | sales_contribution_pct | average_customer_value |
+|---------------|-----------------|-------------|------------------------|------------------------|
+| One-time      | 93099           | 14921510.75 | 94.18                  | 160.28                 |
+| Repeat        | 2997            | 922042.49   | 5.82                   | 307.66                 |
+
 - Repeat customers memiliki nilai rata-rata sekitar dua kali customer one-time.
 - 52.70% repeat customers melakukan pembelian lintas kategori.
 - 47.30% melakukan pembelian dalam kategori yang sama.
+
+| repeat_behavior | repeat_customers | percentage |
+|-----------------|------------------|------------|
+| Cross Category  | 1476             | 52.70      |
+| Same Category   | 1325             | 47.30      |
+
 - customer terbanyak berasal dari SP dengan total 39156 customers
+
+| No    | customer_state | total_customers | total_orders | total_sales | customer_share_pct | revenue_share_pct |
+|-------|----------------|-----------------|--------------|-------------|--------------------|-------------------|
+| 1     | SP             | 39156           | 40501        | 5769703.15  | 41.92              | 37.42             |
+| 2     | RJ             | 11917           | 12350        | 2055401.57  | 12.76              | 13.33             |
+| 3     | MG             | 11001           | 11354        | 1818891.67  | 11.78              | 11.80             |
+| +24 | ...            | ...             | ...          | ...         | ...                | ...               |
+
 ### Output
 - One-time vs repeat customer distribution
 - Repeat purchase rate
@@ -106,7 +160,7 @@ Memahami perilaku pembelian customer, tingkat repeat purchase, serta perbedaan n
 ### Kesimpulan
 Customer retention merupakan salah satu peluang bisnis utama. Meskipun repeat customers hanya mencakup sebagian kecil customer, mereka memiliki average customer value yang jauh lebih tinggi dibandingkan one-time customers. Hal ini menunjukkan potensi ekonomi dari strategi peningkatan repeat purchase.
 
-## EDA 4 SELLERS PERFORMANCE
+## EDA 5 SELLERS PERFORMANCE
 ### tujuan 
 Menilai konsentrasi sales pada seller dan mengidentifikasi seller yang menunjukkan indikasi operational issues.
 ### Proses Analisis
@@ -117,8 +171,45 @@ Menilai konsentrasi sales pada seller dan mengidentifikasi seller yang menunjukk
 5. Menghitung seller cancellation rate.
 6. Membandingkan cancellation rate dengan order volume.
 ### finding
-- terdapat perbedaan antara sellers dengan total sales value tertinggi dengan volume sales tertinggi
-- sellers dengan jumlah terbanyak dan sales value tertinggi terkonsentrasi pada wilayah (State) `SP`
+- terdapat perbedaan antara sellers dengan total sales value tertinggi dengan volume sales tertinggi.
+
+* high volume sales
+
+| No    | seller_id                        | total_orders | total_items | product_sales | average_order_sales |
+|-------|----------------------------------|--------------|-------------|---------------|---------------------|
+| 1     | 6560211a19b47992c3666cc44a7e94c0 | 1854         | 2033        | 123304.83     | 66.51               |
+| 2     | 4a3ca9315b744ce9f8e9374361493884 | 1806         | 1987        | 200472.92     | 111.00              |
+| 3     | 1f50f920176fa81dab994f9023523100 | 1404         | 1931        | 106939.21     | 76.17               |
+| +3092 | ...                              | ...          | ...         | ...           | ...                 |
+
+* high value sales 
+
+| No    | seller_id                        | total_orders | total_items | product_sales | average_order_sales |
+|-------|----------------------------------|--------------|-------------|---------------|---------------------|
+| 1     | 4869f7a5dfa277a7dca6462dcf3b52b2 | 1132         | 1156        | 229472.63     | 202.71              |
+| 2     | 53243585a1d6dc2643021fd1853d8905 | 358          | 410         | 222776.05     | 622.28              |
+| 3     | 4a3ca9315b744ce9f8e9374361493884 | 1806         | 1987        | 200472.92     | 111.00              |
+| +3092 | ...                              | ...          | ...         | ...           | ...                 |
+
+- seller dengan sales value tertinggi berada pada wilayah/state `SP`(sao paulo) guariba
+
+| No    | seller_id                        | seller_city      | seller_state | product_sales |
+|-------|----------------------------------|------------------|--------------|---------------|
+| 1     | 4869f7a5dfa277a7dca6462dcf3b52b2 | guariba          | SP           | 229472.63     |
+| 2     | 53243585a1d6dc2643021fd1853d8905 | lauro de freitas | BA           | 222776.05     |
+| 3     | 4a3ca9315b744ce9f8e9374361493884 | ibitinga         | SP           | 200472.92     |
+| +3092 | ...                              | ...              | ...          | ...           |
+
+
+- daerah dengan jumlah sellers terbanyak dan sales value tertinggi yaitu berada di SP (sao paulo) dengan persentasi 59.56 % dari jumlah total sellers dan 64.57% dari jumlah total sales
+
+| No  | seller_state | total_sellers | total_orders | total_sales | sellers_share_pct | sales_share_pct |
+|-----|--------------|---------------|--------------|-------------|-------------------|-------------------|
+| 1   | SP           | 1769          | 68641        | 9957056.91  | 59.56             | 64.57             |
+| 2   | PR           | 335           | 7512         | 1424161.25  | 11.28             | 9.24              |
+| 3   | MG           | 236           | 7735         | 1184427.54  | 7.95              | 7.68              |
+| +19 | ...          | ...           | ...          | ...         | ...               | ...               |
+
 - Revenue relatif tidak terlalu terkonsentrasi pada sedikit seller.
 - Beberapa seller memiliki cancellation rate relatif tinggi.
 - Cancellation rate perlu dibaca bersama order volume. 
@@ -130,7 +221,7 @@ Menilai konsentrasi sales pada seller dan mengidentifikasi seller yang menunjukk
 ### Kesimpulan
 Olist tidak menunjukkan ketergantungan yang tinggi terhadap sejumlah kecil seller. Risiko utama berada pada operational performance seller tertentu, terutama seller dengan kombinasi order volume yang signifikan dan cancellation rate yang tinggi.
 
-## EDA 5 DELIVERY PERFORMANCE
+## EDA 6 DELIVERY PERFORMANCE
 ### tujuan 
 
 ### Proses Analisis
