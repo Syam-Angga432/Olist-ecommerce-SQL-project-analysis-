@@ -284,6 +284,16 @@ Mengevaluasi kemampuan Olist dalam memenuhi estimasi waktu pengiriman.
 - São Paulo (SP) mendominasi volume transaksi (46.441 pesanan) sekaligus menjadi wilayah paling efisien dengan durasi pengiriman 8,3 hari dan ongkir rata-rata R$ 15,11.
 - Negara bagian seperti MG, PR, DF, RS, dan SC menjaga konsistensi performa dengan On-Time Rate di atas 90–95% dan durasi pengiriman di bawah 15 hari.
 
+| customer_state | total_orders | on_time_rate_pct | avg_delivery_days | avg_freight_value |
+|----------------|--------------|------------------|-------------------|-------------------|
+| SP             | 46441        | 94.23            | 8.3               | 15.11             |
+| PR             | 5649         | 95.22            | 11.5              | 20.47             |
+| MG             | 12916        | 94.56            | 11.5              | 20.63             |
+| DF             | 2355         | 92.57            | 12.5              | 21.07             |
+| SC             | 4097         | 90.38            | 14.5              | 21.51             |
+| RJ             | 14143        | 87.03            | 14.7              | 20.91             |
+| RS             | 6133         | 93.12            | 14.7              | 21.61             |
+
 ### Output
 - Delivery Performance: 93.23% pesanan berhasil tiba tepat waktu atau lebih awal, sedangkan 6.77% mengalami keterlambatan.
 - Seller Processing: Rata-rata seller membutuhkan 2,85 hari (68,49 jam) sejak pembayaran dikonfirmasi hingga menyerahkan pesanan kepada kurir.
