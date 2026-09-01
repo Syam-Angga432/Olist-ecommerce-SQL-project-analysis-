@@ -210,31 +210,57 @@ Menilai konsentrasi sales pada seller dan mengidentifikasi seller yang menunjukk
 | 3   | MG           | 236           | 7735         | 1184427.54  | 7.95              | 7.68              |
 | +19 | ...          | ...           | ...          | ...         | ...               | ...               |
 
-- Revenue relatif tidak terlalu terkonsentrasi pada sedikit seller.
-- Beberapa seller memiliki cancellation rate relatif tinggi.
+- total sales relatif tidak terlalu terkonsentrasi pada sedikit seller.
+- secara keseluruhan cancellation rate terbilang rendah, namun Beberapa seller memiliki cancellation rate relatif tinggi pada volume order yang rendah.
 - Cancellation rate perlu dibaca bersama order volume. 
+
+pengaturan volume order >10
+
+| seller_id                        | total_orders_handled | canceled_orders | cancellation_rate_pct |
+|----------------------------------|----------------------|-----------------|-----------------------|
+| 81783131d2a97c8d44d406a4be81b5d9 | 13                   | 5               | 38.46                 |
+| ffff564a4f9085cd26170f4732393726 | 20                   | 4               | 20.00                 |
+| 20b54c376b794ed028df09a3cd88e8dc | 11                   | 2               | 18.18                 |
+| ...                              | ...                  | ...             | ...                   |
+
+pengaturan volume order >100
+
+| seller_id                        | total_orders_handled | canceled_orders | cancellation_rate_pct |
+|----------------------------------|----------------------|-----------------|-----------------------|
+| 1127b7f2594683f2510f1c2c834a486b | 114                  | 4               | 3.51                  |
+| a416b6a846a11724393025641d4edd5e | 162                  | 5               | 3.09                  |
+| 0adac9fbd9a2b63cccaac4f8756c1ca8 | 110                  | 3               | 2.73                  |
+| ...                              | ...                  | ...             | ...                   |
+
 ### Output
 - Seller sales ranking
 - Top seller contribution
 - Seller cancellation rate
 - Seller operational performance
 ### Kesimpulan
-Olist tidak menunjukkan ketergantungan yang tinggi terhadap sejumlah kecil seller. Risiko utama berada pada operational performance seller tertentu, terutama seller dengan kombinasi order volume yang signifikan dan cancellation rate yang tinggi.
+total value sales dan volume tidak berbanding lurus. Olist tidak menunjukkan ketergantungan yang tinggi terhadap sejumlah kecil seller. Risiko berada pada operational performance seller tertentu, semakin rendah volume order pada sellers semakin tinggi pula tingkat cancellationnya.
 
 ## EDA 6 DELIVERY PERFORMANCE
 ### tujuan 
-
+Mengevaluasi kemampuan Olist dalam memenuhi estimasi waktu pengiriman.
 ### Proses Analisis
 1. Menghitung delivery duration.
 2. Membandingkan actual delivery dengan estimated delivery.
-3. Mengklasifikasikan order menjadi:
+3. menghitung average delivery
+4. Mengklasifikasikan order menjadi:
    * early/On Time
    * Late
-4. Menghitung late delivery rate.
-5. menghitung sellers processing time
+5. Menghitung late delivery rate.
+6. menghitung sellers processing time
 7. mengidentifikasi dampak ke review score
 8. menghitung delivery performance untuk masing-masing state.
 ### finding
+- durasi rata-rata transit kurir adalah 9 hari dan durasi rata-rata delivery adalah 12-13 hari 
+
+| avg_carrier_transit_days | avg_total_delivery_days |
+|--------------------------|-------------------------|
+| 9.33                     | 12.57                   |
+
 - on time / early delivery memiliki persentasi yang jauh lebih tinggi dibandingkan late_delivery
   
 | delivery_status | total_orders | percentage |
