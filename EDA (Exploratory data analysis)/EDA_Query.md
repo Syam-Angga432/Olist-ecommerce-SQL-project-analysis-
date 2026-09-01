@@ -500,24 +500,22 @@ LIMIT 20;
 ```
 ### sellers detail (5.2)
 ```sql
-SELECT 
+SELECT
     s.seller_id,
-    s.seller_state,
+	s.seller_city,
+	s.seller_state,
     COUNT(DISTINCT oi.order_id) AS total_orders,
-    ROUND(SUM(oi.price), 2) AS total_revenue,
-    ROUND(AVG(orw.review_score), 2) AS avg_review_score,
-    
-    -- Distribusi Rating
-    COUNT(CASE WHEN orw.review_score = 5 THEN 1 END) AS count_5_star,
-    COUNT(CASE WHEN orw.review_score <= 2 THEN 1 END) AS count_low_star
+    COUNT(*) AS total_items,
+    ROUND(SUM(oi.price), 2) AS product_sales,
+    ROUND(SUM (oi.price)
+        / COUNT(DISTINCT oi.order_id),2) AS average_sales
 FROM sellers s
-JOIN order_items oi ON s.seller_id = oi.seller_id
-JOIN orders_clean o ON oi.order_id = o.order_id
-JOIN order_reviews orw ON o.order_id = orw.order_id
-WHERE o.order_status = 'delivered'
-GROUP BY s.seller_id, s.seller_state
-HAVING COUNT(DISTINCT oi.order_id) >= 20
-ORDER BY total_revenue DESC;
+JOIN order_items oi
+    ON s.seller_id = oi.seller_id
+JOIN orders_clean o
+    ON oi.order_id = o.order_id
+GROUP BY s.seller_id
+ORDER BY product_sales DESC;
 ```
 ### segmentation sellers (5.3)
 ```sql
@@ -590,39 +588,36 @@ JOIN order_reviews orw ON o.order_id = orw.order_id
 WHERE o.order_status = 'delivered'
 GROUP BY s.seller_id, s.seller_state
 HAVING COUNT(DISTINCT oi.order_id) >= 10
-ORDER BY total_revenue DESC;
+ORDER BY 6 DESC;
 ```
-### konsentrasi sellers per wilayah
+### distribusi sellers per wilayah
 ```sql
-WITH seller_state_sales AS (
+WITH sellers_geography AS (
     SELECT 
-        s.seller_state,
-        COUNT(DISTINCT s.seller_id) AS total_active_sellers,
-        COUNT(DISTINCT oi.order_id) AS total_orders,
-        SUM(oi.price) AS product_sales,
-        SUM(oi.freight_value) AS freight_value,
+        sl.seller_state,
+        COUNT(DISTINCT sl.seller_id) AS total_sellers,
+        COUNT(DISTINCT o.order_id) AS total_orders,
         SUM(oi.price + oi.freight_value) AS total_sales
-    FROM sellers s
+    FROM sellers sl
     JOIN order_items oi 
-        ON s.seller_id = oi.seller_id
-    JOIN orders_clean o 
+        ON sl.seller_id = oi.seller_id
+	JOIN orders_clean o 
         ON oi.order_id = o.order_id
     WHERE o.order_status = 'delivered'
-    GROUP BY s.seller_state
-)
+    GROUP BY sl.seller_state)
 SELECT 
     seller_state,
-    total_active_sellers,
+    total_sellers,
     total_orders,
-    ROUND(product_sales, 2) AS product_sales,
-    ROUND(freight_value, 2) AS freight_value,
     ROUND(total_sales, 2) AS total_sales,
-    ROUND(
-        (total_sales * 100.0 / SUM(total_sales) OVER ()), 
-        2
-    ) AS sales_contribution_pct
-FROM seller_state_sales
-ORDER BY total_sales DESC;
+    
+    -- % Konsentrasi Basis Pelanggan
+    ROUND((total_sellers * 100.0 / SUM(total_sellers) OVER ()), 2) AS sellers_share_pct,
+    
+    -- % Kontribusi Penjualan (Revenue)
+    ROUND((total_sales * 100.0 / SUM(total_sales) OVER ()), 2) AS revenue_share_pct
+FROM sellers_geography
+ORDER BY total_sellers DESC;
 ```
 ## EDA 6 DELIVERY PERFORMANCE 
 ### 1. Tingkat Keterlambatan Pengiriman (On-Time vs Late Delivery Rate) (6.1)
