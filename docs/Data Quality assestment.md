@@ -35,11 +35,11 @@ COUNT(*) AS total_NULL
 FROM <table_name>
 WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4> is null;
 ```
-** OR** 
+**OR** 
 ```sql
 SELECT *
 FROM <table_name>
-WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4>
+WHERE <column_1> is null or  <column_2> IS NULL or <column_3> is null or <column_4> is null;
 ```
 **version 2**
 ```sql
@@ -423,7 +423,7 @@ GROUP BY order_id
 HAVING COUNT(*)>1
 order by 2 desc;
 
--- data validation
+-- DATA VALIDATION
 SELECT
     COUNT(*) FILTER (WHERE price < 0) AS negative_price,
     COUNT(*) FILTER (WHERE freight_value < 0) AS negative_freight
