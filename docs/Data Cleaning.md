@@ -6,37 +6,17 @@ Proses ini bertujuan menghasilkan dataset yang andal dan siap dianalisis dengan 
 ## ANALYSIS PROCESS
 ```text
 ├── 1. product_categories 
-│         └── issue : data tidak lengkap | penanganan : menambah category dengan referensi dari tabel lain.
+│         └── issue : data tidak lengkap | penanganan : imputasi/menambah data dengan referensi dari tabel lain.
 │                             
 ├── 2. products
-│         └── issue : data null          | penanganan : mengubah/melabeli data null.
+│         └── issue : data null          | penanganan : imputasi/mengubah/melabeli data null/flagging.
 │                
 ├── 3. orders
-│         ├── issue : data null          | penanganan : mengubah/melabeli data null.
-│         └── issue : invalid data       | penanganan : mengubah/melabeli data null.      
-├── 7. order_items
-│   ├── menghitung jumlah rows
-│   ├── menghitung jumlah null
-│   ├── menghitung jumlah duplikat
-│   │              ↓
-│   │         melihat jumlah items pada setiap order_id
-│   └── (data validity check) mengecek produk yang harga dan freightnya negatif (< 0)
+│         ├── issue : data null          | penanganan : imputasi/mengubah/melabeli data null/flagging.
+│         └── issue : invalid data       | penanganan : imputasi/data correction/ transform into null/dropping/flagging
 │
-├── 8. order_payments
-│   ├── menghitung jumlah rows
-│   ├── menghitung jumlah null
-│   ├── menghitung jumlah duplikat
-│   │              ↓
-│   │         melihat jumlah sequence pembayaran setiap order_id
-│   └── (data validity check) melihat payment_value yang bernilai negatif dan 0 payment_installments
-│                      ↓
-│                 melihat paymeny type dan payment value dari payment anomalies
-│                     
-└── 8. order_reviews
-    ├── menghitung jumlah rows
-    ├── menghitung jumlah null
-    ├── menghitung jumlah duplikat
-    └── (data validity check) melihat apakah ada skor dibawah 1 atau diatas 5 
+└── 4. order_payments
+          └── issue : invalid data       | penanganan : imputasi/data correction/ transform into null/dropping/flagging
 ```
 
 ## FINDING ISSUE 
@@ -92,7 +72,13 @@ credit_card, payment_installments = 0 di ubah menjadi 1, Nilai 0 pada pembayaran
 **hasil:**
 <img width="232" height="50" alt="image" src="https://github.com/user-attachments/assets/bedb34b7-9a05-42b2-83de-23216bcb59af" />
 
-### ANALISIS TABEL LOGIC
+## OUTPUT
+1. product_categories _v2 : menambahkan `pc_gamer` dan `portateis_cozinha_e_preparadores_de_alimentos` (`pc_gamer`,`Kitchen_Appliances_&_Food_Prep`) pada  `product_category_name`dan `product_category_name_english`
+2. products_clean         : mengubah  `product_category_name` null menjadi `uncategorized`
+3. orders_clean           : imputasi `order_approved_at`, mengubah `invalid_carrier_delivery`dan `invalid_delivery_sequence` menjadi null
+4. order_payments_clean   : imputasi  `payment_installments`
+
+## ANALISIS TABEL LOGIC
 ```text
 ├── 1. RAW DATA (QDA)
 │   ├─ product_categories
@@ -105,4 +91,5 @@ credit_card, payment_installments = 0 di ubah menjadi 1, Nilai 0 pada pembayaran
     ├── orders_clean
     └── order_payments_clean
 ```
-
+## SUMMARY
+seluruh issue yang ditemukan pada tahap DQA telah di tindak lanjuti, ada kemungkin masih ada beberapa ketidaksesuaian data yang tidak di cari tau lebih lanjut atau tidak ditindak lanjuti namun sifatnya tidak crucial atau berpengaruh signifikan terhadap tahapan analisis selanjutnya. pada eksekusi data cleaning kali ini telah dilakukan imputasi,menambahkan data,transform into null, dan ada beberapa data null yang dibiarkan apa adanya/tidak ditindak lanjuti karena bukan merupakan anomali yang mengurangi kualitas data.
