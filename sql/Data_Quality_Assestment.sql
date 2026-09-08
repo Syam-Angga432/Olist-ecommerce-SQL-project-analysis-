@@ -138,7 +138,7 @@ COUNT(*) AS NULL
 FROM geolocation
 WHERE geolocation_zip_code_prefix is null or geolocation_lat IS NULL or geolocation_lng is null or
 geolocation_city is null or geolocation_state is null;
-=========================================================================================================
+-- =========================================================================================================
 -- 4. TABEL: sellers
 -- a. OVERVIEW & ROW COUNT
 select * from sellers;
