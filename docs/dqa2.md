@@ -17,17 +17,15 @@
 | 9  | order_reviews    | 99224      |
 
 ## FINDINGS
-1. 
-
-## Issue / problem
 ### 1. product_categories
 pada product_categories terdapat produk kategori yang belum lengkap yaitu:
 `pc_gamer` dan `portateis_cozinha_e_preparadores_de_alimentos`
 ### 2. customers
-duplikasi pada kolom `customer_unique_id` adalah hal yang wajar, bahkan mengindikasikan repeat order oleh customer.
+duplikasi pada kolom `customer_unique_id` adalah hal yang wajar, `customer_id` dan `customer_unique_id` merupakan dua kolom dengan fungsi yang berbeda. terdapat perbedaan jumlah dimana `customer_id` (99441) dan `customer_unique_id` (96.096). (3345) di indikasikan sebagai repeat order.
 ### 3. products
 terdapat null sebanyak 610 `product_category_name`begitu pula pada `product_name_lenght`,`product_description_lenght`,`product_photos_qty`.
 ### 4. orders
+* pada `tabel orders` (96478) order memiliki `order_status` "delivered" atau 97,02% dari total
 * **terdapat null pada**
 <img width="365" height="52" alt="image" src="https://github.com/user-attachments/assets/cbd83df1-9c3d-493f-a70d-4aef44ee1b63" />
 
