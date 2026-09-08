@@ -3,7 +3,7 @@
 * Database : olist_project
 * Tool     : PostgreSQL
 
-## Workflow
+## ANALYSIS PROCESS
 ```text
 ├── 1. product_categories
 │         ├── menghitung jumlah rows
@@ -45,46 +45,41 @@
 │   │         melihat pola null setiap timestamp pada order_status "delivered"
 │   ├── menghitung jumlah duplikat
 │   └── (data validity check) mengecek jumlah invalid timestamps
-│   │              ↓
-│   │         - order_approved_at < order_purchase_timestamp (invalid_purchase_approval),
-│   │         - order_delivered_carrier_date < order_purchase_timestamp(invalid_carrier_delivery),
-│   │         - order_delivered_customer_date < order_purchase_timestamp (invalid_customer_delivery),
-│   │         - order_delivered_customer_date < order_delivered_carrier_date (invalid_delivery_sequence)
-│   │              ↓
-│   │         mengidentifikasi selisih anomlai timestamp terbesar & terkecil
-│   │              ↓
-│   │         menyelididiki apakah anomali timestamps overlap
-│   │              ↓
-│   │         melihat persebaran anomali timestamp berdasarkan order_status
+│                    ↓
+│               - order_approved_at < order_purchase_timestamp (invalid_purchase_approval),
+│               - order_delivered_carrier_date < order_purchase_timestamp(invalid_carrier_delivery),
+│               - order_delivered_customer_date < order_purchase_timestamp (invalid_customer_delivery),
+│             - order_delivered_customer_date < order_delivered_carrier_date (invalid_delivery_sequence)
+│                    ↓
+│               mengidentifikasi selisih anomlai timestamp terbesar & terkecil
+│                    ↓
+│               menyelididiki apakah anomali timestamps overlap
+│                    ↓
+│               melihat persebaran anomali timestamp berdasarkan order_status
 ├── 7. order_items
 │   ├── menghitung jumlah rows
 │   ├── menghitung jumlah null
-│   │              ↓
-│   │         melihat rows yang memiliki variasi null pada kolom-kolomnya
 │   ├── menghitung jumlah duplikat
-│   └── (data validity check) menghitung informasi produk yang nilainya negatif (< 0)
-│            
-
+│   │              ↓
+│   │         melihat jumlah items pada setiap order_id
+│   └── (data validity check) mengecek produk yang harga dan freightnya negatif (< 0)
+│
+├── 8. order_payments
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   ├── menghitung jumlah duplikat
+│   │              ↓
+│   │         melihat jumlah sequence pembayaran setiap order_id
+│   └── (data validity check) melihat payment_value yang bernilai negatif dan 0 payment_installments
+│                      ↓
+│                 melihat paymeny type dan payment value dari payment anomalies
+│                     
+└── 8. order_reviews
+    ├── menghitung jumlah rows
+    ├── menghitung jumlah null
+    ├── menghitung jumlah duplikat
+    └── (data validity check) melihat apakah ada skor dibawah 1 atau diatas 5 
 ```
-1. product_categories
-> * menghitung jumlah rows
-> * menghitung jumlah null
-> * menghitung jumlah duplikat
-> * mengecek kelengkapan category dengan mambandingkannya dengan tabel `product`
-2. customers
-> * menghitung jumlah rows
-> * menghitung jumlah null
-> * menghitung jumlah duplikat
-> * melihat jumlah customer_id per customer_unique_id
-3. geolocation
-4. sellers
-5. products
-6. orders
-7. order_items
-8. order_payment
-9. order_reviews
-
-
 ## TABEL ROWS
 | No | tabel              | total_rows |
 |----|--------------------|------------|
@@ -134,3 +129,8 @@ terdapat null sebanyak 610 `product_category_name`begitu pula pada `product_name
 <img width="235" height="50" alt="image" src="https://github.com/user-attachments/assets/16d68237-2080-435d-94d4-4cec8c52f157" />
 
 <img width="1159" height="139" alt="image" src="https://github.com/user-attachments/assets/f01cbc1d-ab1f-48ae-bcdf-ece7f72565dc" />
+
+## SUMMARY
+terdapat null dan duplukasi di sebagian besar tabel, namun nilai null dan duplikasi yang ada belum tentu menjadikan nilai tersebut di tetapkan sebagai anomali, misal nya seperti null di `order_delivered_customer_date`merupakan hal wajar bila `order_statusnya` adalah `shipped` atau duplikasi yang terjadi pada `customer_unique_id` di tabel customers yang malah mengindikasikan repeat order dan duplikasi pada `order_item_id` dan `product_id` di tabel `order_items` yang menunjukan jumlah item pada 1 `order_id`.
+pada tabel `product_categories` masih ada kategori yang belum lengkap, yakni `pc_gamer` dan `portateis_cozinha_e_preparadores_de_alimentos`. terdapat 610 product id dengan `product_category_name` bernilai null
+selain itu, pada tabel orders terdapat nilai null anomalies pada order dengan `order_status`"delivered" dan masih terdapat invalid timestamps dengan jumlah total 188. sementara itu untuk total order (99441),  97,02% nya sudah berstatus order "delivered" atau pada angka 96.096
