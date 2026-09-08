@@ -24,7 +24,13 @@ ALTER TABLE product_categories_v2
 ADD CONSTRAINT pk_product_categories_v2 PRIMARY KEY (product_category_name)
 ;
 ```
+#### 1.1 validation
+```sql
+SELECT count (*) FROM product_categories_v2;
 
+select * from product_categories_v2
+where product_category_name_english in ('pc_gamer','Kitchen_Appliances_&_Food_Prep');
+```
 ### 2. products
 610 NULL pada kolom `product_category_name` akan sulit diidentfikasi dengan sumber yang terbatas, misal butuh image product sehingga bisa mengetahui masuk kategori apa atau data terbaru dari tabel yang berbeda. namun karena sumber tersebut tidak tersedia salah satu cara paling aman adalah dengan mengubah null menjadi `unknown` atau `uncategorized` agar terdeteksi pada proses analisis kedepannya.
 
@@ -45,6 +51,19 @@ SELECT
     product_height_cm,
     product_width_cm
 FROM products;
+```
+#### 2.1 validation
+```sql
+select * from products_clean 
+where product_category_name is null;
+
+select 
+product_category_name,
+count (product_id) as jumlah_produk_
+from products_clean 
+where product_category_name = 'Uncategorized'
+group by 1
+;
 ```
 
 ### 3. orders
@@ -101,6 +120,34 @@ SELECT
         order_estimated_delivery_date
 FROM step1_impute_and_clean_carrier;
 ```
+#### 3.1 validation
+a. target-->approved_at_null = 0
+```sql
+SELECT
+    order_status,
+    COUNT(*) AS total_orders,
+    COUNT(*) - COUNT(order_approved_at) AS approved_at_null
+from orders_clean 
+where order_status = 'delivered'
+group by 1;
+```
+b. target-->invalid_carrier_date = 0
+```sql
+SELECT
+    COUNT(*) AS invalid_carrier_date
+FROM orders_clean
+WHERE order_delivered_carrier_date IS NOT NULL
+  AND order_delivered_carrier_date < order_purchase_timestamp;
+```
+c.  target-->invalid_delivery_sequence = 0
+```sql
+SELECT
+    COUNT(*) AS invalid_delivery_sequence
+FROM orders_clean
+WHERE order_delivered_customer_date IS NOT NULL
+  AND order_delivered_carrier_date IS NOT NULL
+  AND order_delivered_customer_date < order_delivered_carrier_date;
+```
 
 ### 4. ORDER_PAYMENTS
 credit_card, payment_installments = 0 di ubah menjadi 1, Nilai 0 pada pembayaran kartu kredit merupakan anomali logika (data entry anomaly)
@@ -119,5 +166,11 @@ SELECT
     payment_value
 FROM order_payments;
 ```
-
+#### 4.1 validation
+```sql
+SELECT
+    COUNT(*) FILTER (WHERE payment_value < 0) AS negative_payment,
+    COUNT(*) FILTER (WHERE payment_installments < 1) AS invalid_installments
+FROM order_payments_clean;
+```
 
