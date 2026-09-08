@@ -82,7 +82,9 @@ sama seperti sebelumnya akan dibuat tabel baru, yaitu `products_clean` agar tida
 * untuk `invalid_carrier_delivery` dan `invalid_delivery_sequence` dengan total invalid timestamp 188, disebabkan urutan timestamp yang salah akan di null-kan karena tidak bisa secara sembarangan menentukan durasi masing-masing order dan tetap Menjaga Integritas Analisis SLA. sehingga pada tahap delivery performance order dengan timestamp null akan di abaikan(exclude).
 
 **hasil:**
-<img width="498" height="50" alt="image" src="https://github.com/user-attachments/assets/79d9e4be-9e9d-4f6e-81aa-1e7eb64c645b" />
+* <img width="310" height="60" alt="image" src="https://github.com/user-attachments/assets/53cad3b8-7df0-411a-ae26-10326c0184f4" />
+* <img width="137" height="53" alt="image" src="https://github.com/user-attachments/assets/cccc1cf1-c190-4a91-91f9-a0873a4cb08b" />
+* <img width="161" height="51" alt="image" src="https://github.com/user-attachments/assets/54df56a8-885e-4a95-b35a-30a564dfd52d" />
 
 ### 4. ORDER_PAYMENTS
 credit_card, payment_installments = 0 di ubah menjadi 1, Nilai 0 pada pembayaran kartu kredit merupakan anomali logika (data entry anomaly)
