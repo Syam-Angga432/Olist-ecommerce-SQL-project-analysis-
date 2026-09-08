@@ -17,7 +17,7 @@
 | 9  | order_reviews    | 99224      |
 
 ## FINDINGS
-
+1. 
 
 ## Issue / problem
 ### 1. product_categories
