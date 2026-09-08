@@ -4,7 +4,40 @@
 Proses ini bertujuan menghasilkan dataset yang andal dan siap dianalisis dengan cara menindaklanjuti hasil data profiling. Setiap tindakan—baik perbaikan data, pelabelan, maupun penyaringan—didokumentasikan secara rapi untuk menjaga validitas data tanpa menghilangkan informasi penting di dalamnya.
 
 ## ANALYSIS PROCESS
-
+```text
+├── 1. product_categories 
+│         └── issue : data tidak lengkap | penanganan : menambah category dengan referensi dari tabel lain.
+│                             
+├── 2. products
+│         └── issue : data null          | penanganan : mengubah/melabeli data null.
+│                
+├── 3. orders
+│         ├── issue : data null          | penanganan : mengubah/melabeli data null.
+│         └── issue : invalid data       | penanganan : mengubah/melabeli data null.      
+├── 7. order_items
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   ├── menghitung jumlah duplikat
+│   │              ↓
+│   │         melihat jumlah items pada setiap order_id
+│   └── (data validity check) mengecek produk yang harga dan freightnya negatif (< 0)
+│
+├── 8. order_payments
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   ├── menghitung jumlah duplikat
+│   │              ↓
+│   │         melihat jumlah sequence pembayaran setiap order_id
+│   └── (data validity check) melihat payment_value yang bernilai negatif dan 0 payment_installments
+│                      ↓
+│                 melihat paymeny type dan payment value dari payment anomalies
+│                     
+└── 8. order_reviews
+    ├── menghitung jumlah rows
+    ├── menghitung jumlah null
+    ├── menghitung jumlah duplikat
+    └── (data validity check) melihat apakah ada skor dibawah 1 atau diatas 5 
+```
 
 ## FINDING ISSUE 
 ### 1. product_categories
