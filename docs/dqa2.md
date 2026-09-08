@@ -3,18 +3,100 @@
 * Database : olist_project
 * Tool     : PostgreSQL
 
+## Workflow
+```text
+├── 1. product_categories
+│         ├── menghitung jumlah rows
+│         ├── menghitung jumlah null
+│         ├── menghitung jumlah duplikat
+│         └── (data validity check)mengecek kelengkapan category dengan mambandingkannya dengan tabel `product`
+├── 2. customers
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   └── menghitung jumlah duplikat
+│                 ↓
+│            melihat jumlah customer_id per customer_unique_id
+│                
+├── 3.geolocation
+│         ├── menghitung jumlah rows
+│         └── menghitung jumlah null
+│  
+├── 4.sellers
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   └── menghitung jumlah duplikatl
+│                
+├── 5. products
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   │              ↓
+│   │         melihat rows yang memiliki variasi null pada kolom-kolomnya
+│   ├── menghitung jumlah duplikat
+│   └── (data validity check) menghitung informasi produk yang nilainya negatif (< 0)
+│                
+├── 6.orders
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   │              ↓
+│   │         melihat kolom timestamp mana saja yang memiliki nilai null
+│   │              ↓
+│   │         melihat jumlah null setiap timestamp berdasarkan order_status
+│   │              ↓
+│   │         melihat pola null setiap timestamp pada order_status "delivered"
+│   ├── menghitung jumlah duplikat
+│   └── (data validity check) mengecek jumlah invalid timestamps
+│   │              ↓
+│   │         - order_approved_at < order_purchase_timestamp (invalid_purchase_approval),
+│   │         - order_delivered_carrier_date < order_purchase_timestamp(invalid_carrier_delivery),
+│   │         - order_delivered_customer_date < order_purchase_timestamp (invalid_customer_delivery),
+│   │         - order_delivered_customer_date < order_delivered_carrier_date (invalid_delivery_sequence)
+│   │              ↓
+│   │         mengidentifikasi selisih anomlai timestamp terbesar & terkecil
+│   │              ↓
+│   │         menyelididiki apakah anomali timestamps overlap
+│   │              ↓
+│   │         melihat persebaran anomali timestamp berdasarkan order_status
+├── 7. order_items
+│   ├── menghitung jumlah rows
+│   ├── menghitung jumlah null
+│   │              ↓
+│   │         melihat rows yang memiliki variasi null pada kolom-kolomnya
+│   ├── menghitung jumlah duplikat
+│   └── (data validity check) menghitung informasi produk yang nilainya negatif (< 0)
+│            
+
+```
+1. product_categories
+> * menghitung jumlah rows
+> * menghitung jumlah null
+> * menghitung jumlah duplikat
+> * mengecek kelengkapan category dengan mambandingkannya dengan tabel `product`
+2. customers
+> * menghitung jumlah rows
+> * menghitung jumlah null
+> * menghitung jumlah duplikat
+> * melihat jumlah customer_id per customer_unique_id
+3. geolocation
+4. sellers
+5. products
+6. orders
+7. order_items
+8. order_payment
+9. order_reviews
+
+
 ## TABEL ROWS
-| No | tabel            | total_rows |
-|----|------------------|------------|
-| 1  | product_category | 71         |
-| 2  | customers        | 99441      |
-| 3  | geolocation      | 1000163    |
-| 4  | sellers          | 3095       |
-| 5  | products         | 32951      |
-| 6  | orders           | 99441      |
-| 7  | order_items      | 112650     |
-| 8  | order_payment    | 103886     |
-| 9  | order_reviews    | 99224      |
+| No | tabel              | total_rows |
+|----|--------------------|------------|
+| 1  | product_categories | 71         |
+| 2  | customers          | 99441      |
+| 3  | geolocation        | 1000163    |
+| 4  | sellers            | 3095       |
+| 5  | products           | 32951      |
+| 6  | orders             | 99441      |
+| 7  | order_items        | 112650     |
+| 8  | order_payment      | 103886     |
+| 9  | order_reviews      | 99224      |
 
 ## FINDINGS
 ### 1. product_categories
