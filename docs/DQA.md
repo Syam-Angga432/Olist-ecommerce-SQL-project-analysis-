@@ -80,7 +80,7 @@
     ├── menghitung jumlah duplikat
     └── (data validity check) melihat apakah ada skor dibawah 1 atau diatas 5 
 ```
-## TABEL'S ROW
+## TABEL'S TOTAL ROW
 | No | tabel              | total_rows |
 |----|--------------------|------------|
 | 1  | product_categories | 71         |
