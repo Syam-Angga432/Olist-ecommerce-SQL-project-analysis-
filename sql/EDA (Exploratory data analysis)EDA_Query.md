@@ -2,7 +2,7 @@
 Pada tahap ini, analisis dilakukan menggunakan kueri SQL tingkat lanjut (`JOINs`, `CTEs`, `Window Functions`, dan `Aggregations`) untuk mengekstrak *insight* dari database `olist_project`.
 
 ## EDA 1 OVERALL BUSINESS PERFORMANCE  
-### Key Performance (1.1)
+### KEY PERFORMANCE (1.1)
 ```sql
 -- 1. total orders (Seberapa besar volume bisnis Olist dalam dataset?)
 SELECT
@@ -29,7 +29,7 @@ SELECT
     SUM(freight_value) AS total_freight
 FROM order_items;
 ```
-### Base KPI (1.2)
+### BASE KPI (1.2)
 ``` sql
 SELECT
     -- (Order & Customer)
@@ -70,7 +70,7 @@ SELECT
         / NULLIF(COUNT(DISTINCT oi.order_id), 0), 2)
      FROM order_items oi) AS average_order_value;
 ```
-### Total Transaction value, total order, percentage by status
+### TOTAL TRANSACTION VALUE, TOTAL ORDER, PERCENTAGE BY STATUS
 ```sql
 SELECT
     o.order_status,
@@ -85,7 +85,7 @@ JOIN order_items oi
 GROUP BY o.order_status
 ORDER BY sales_including_freight DESC;
 ```
-### Base Metrics Completed orders / Delivered (1.3)
+### BASE METRICS COMPLETED ORDERS / DELIVERED (1.3)
 ```sql
 SELECT
     COUNT(DISTINCT o.order_id) AS completed_orders,
@@ -147,14 +147,35 @@ SELECT
     COUNT(DISTINCT o.order_id) AS total_orders,
     ROUND(SUM(oi.price + oi.freight_value)::NUMERIC, 2) AS total_transaction_value,
     ROUND(AVG(oi.freight_value)::NUMERIC, 2) AS avg_freight_cost
-FROM orders o
+FROM orders_clean o
 JOIN customers c ON o.customer_id = c.customer_id
 JOIN order_items oi ON o.order_id = oi.order_id
 WHERE o.order_status = 'delivered'
 GROUP BY 1
 ORDER BY total_transaction_value DESC;
 ```
-### TOTAL TRANSACTION VALUE / SALES BY PAYMENT METHOD (2.4)
+### SALES DISTRIBUTION IN WEEKS (2.4)
+```sql
+SELECT 
+    TO_CHAR(order_purchase_timestamp, 'Day') AS Days,
+    EXTRACT(ISODOW FROM order_purchase_timestamp) AS no_days,
+    COUNT(*) AS total_order
+FROM orders_clean
+WHERE order_status = 'delivered'
+GROUP BY TO_CHAR(order_purchase_timestamp, 'Day'), EXTRACT(ISODOW FROM order_purchase_timestamp)
+ORDER BY 2;
+```
+### SALES DISTRIBUTION IN 24 HOURS (2.5)
+```sql
+SELECT 
+    EXTRACT(HOUR FROM order_purchase_timestamp) AS time_hours,
+    COUNT(*) AS total_orders
+FROM orders_clean
+WHERE order_status = 'delivered'
+GROUP BY 1
+ORDER BY 1;
+```
+### TOTAL TRANSACTION VALUE / SALES BY PAYMENT METHOD 
 ```sql
 WITH payment_summary AS (
     SELECT 
@@ -175,28 +196,38 @@ SELECT
 FROM payment_summary
 ORDER BY total_revenue DESC;
 ```
-## EDA 3 PRODUCT PERFORMANCE 
-### Top Product Category by value Sales
+### SALES CONTRIBRUTION BY CATEGORY
 ```sql
-SELECT
-    COALESCE(pc.product_category_name_english, 'Unknown') AS category,
-    COUNT(DISTINCT oi.order_id) AS total_orders,
-    COUNT(*) AS total_items,
-    ROUND(SUM(oi.price), 2) AS product_sales,
-    ROUND(SUM(oi.freight_value), 2) AS freight_value,
-    ROUND(SUM(oi.price + oi.freight_value), 2) AS total_sales
-FROM order_items oi
-JOIN products_clean p
-    ON oi.product_id = p.product_id
-LEFT JOIN product_categories pc
-    ON p.product_category_name = pc.product_category_name
-GROUP BY COALESCE(pc.product_category_name_english, 'Unknown')
-ORDER BY 6 DESC;
+WITH category_summary AS (
+    SELECT 
+        COALESCE(pc.product_category_name_english, 'Uncategorized') AS category,
+        COUNT(DISTINCT o.order_id) AS total_orders,
+        COUNT(oi.order_item_id) AS total_items,
+        SUM(oi.price) AS product_sales,
+        SUM(oi.freight_value) AS freight_value,
+        SUM(oi.price + oi.freight_value) AS total_sales
+    FROM products_clean p
+    JOIN order_items oi ON p.product_id = oi.product_id
+    left JOIN orders_clean o ON oi.order_id = o.order_id
+	left JOIN product_categories_v2 pc ON pc.product_category_name = p.product_category_name
+    WHERE o.order_status = 'delivered'
+    GROUP BY 1)
+SELECT 
+    category,
+    total_orders,
+    total_items,
+    ROUND(product_sales, 2) AS product_sales,
+    ROUND(freight_value, 2) AS freight_value,
+    ROUND(total_sales, 2) AS total_sales,
+    ROUND((total_sales / SUM(total_sales) OVER ()) * 100,2) AS sales_contribution_pct
+FROM category_summary
+ORDER BY total_sales DESC;
 ```
-### Top Product Category by volume sales
+## EDA 3 PRODUCT & CATEGORY PERFORMANCE 
+### TOP PRODUCT CATEGORY BY SALES VALUE (3.1)
 ```sql
 SELECT
-    COALESCE(pc.product_category_name_english, 'Unknown') AS category,
+    COALESCE(pc.product_category_name_english, 'Uncategorized') AS category,
     COUNT(DISTINCT oi.order_id) AS total_orders,
     COUNT(*) AS total_items,
     ROUND(SUM(oi.price), 2) AS product_sales,
@@ -205,12 +236,33 @@ SELECT
 FROM order_items oi
 JOIN products_clean p
     ON oi.product_id = p.product_id
-LEFT JOIN product_categories pc
+LEFT JOIN product_categories_v2 pc
     ON p.product_category_name = pc.product_category_name
-GROUP BY COALESCE(pc.product_category_name_english, 'Unknown')
+LEFT JOIN orders_clean o
+	ON oi.order_id = o.order_id 
+WHERE o.order_status = 'delivered'
+GROUP BY COALESCE(pc.product_category_name_english, 'Uncategorized')
+ORDER BY 4 DESC;
+```
+### TOP PRODUCT CATEGORY BY SALES VOLUME (3.2)
+```sql
+SELECT
+    COALESCE(pc.product_category_name_english, 'Uncategorized') AS category,
+    COUNT(DISTINCT oi.order_id) AS total_orders,
+    COUNT(*) AS total_items,
+    ROUND(SUM(oi.price), 2) AS product_sales
+FROM order_items oi
+JOIN products_clean p
+    ON oi.product_id = p.product_id
+LEFT JOIN product_categories_v2 pc
+    ON p.product_category_name = pc.product_category_name
+LEFT JOIN orders_clean o
+	ON oi.order_id = o.order_id 
+WHERE o.order_status = 'delivered'
+GROUP BY COALESCE(pc.product_category_name_english, 'Uncategorized')
 ORDER BY 3 DESC;
 ```
-### TOP 10 PRODUCT BY SALES VOLUME (3.1)
+### TOP 10 PRODUCT BY SALES VOLUME 
 ```sql
 SELECT 
     p.product_id,
