@@ -262,24 +262,7 @@ WHERE o.order_status = 'delivered'
 GROUP BY COALESCE(pc.product_category_name_english, 'Uncategorized')
 ORDER BY 3 DESC;
 ```
-### TOP 10 PRODUCT BY SALES VOLUME 
-```sql
-SELECT 
-    p.product_id,
-    COALESCE(pc.product_category_name_english, 'Uncategorized') AS category_name,
-    COUNT(oi.order_item_id) AS total_items_sold, -- Volume unit terjual
-    COUNT(DISTINCT oi.order_id) AS total_unique_orders, -- Jumlah transaksi unik
-    ROUND(SUM(oi.price)::NUMERIC, 2) AS total_product_sales
-FROM order_items oi
-JOIN products p ON oi.product_id = p.product_id
-LEFT JOIN product_categories pc ON p.product_category_name = pc.product_category_name
-JOIN orders o ON oi.order_id = o.order_id
-WHERE o.order_status = 'delivered'
-GROUP BY 1, 2
-ORDER BY total_items_sold DESC
-LIMIT 10;
-```
-### TOP 10 PRODUCT BY SALES VALUE (3.2)
+### TOP 10 PRODUCT BY SALES VALUE (3.3)
 ```sql
 select * from order_items;
 SELECT
@@ -302,9 +285,26 @@ GROUP BY
     oi.product_id,
     COALESCE(pc.product_category_name_english, 'uncategorized')
 ORDER BY 5 desc
-LIMIT 20;
+LIMIT 10;
 ```
-### top volume product in marketplace by category (3.3)
+### TOP 10 PRODUCT BY SALES VOLUME (3.4)
+```sql
+SELECT 
+    p.product_id,
+    COALESCE(pc.product_category_name_english, 'Uncategorized') AS category_name,
+    COUNT(oi.order_item_id) AS total_items_sold, -- Volume unit terjual
+    COUNT(DISTINCT oi.order_id) AS total_unique_orders, -- Jumlah transaksi unik
+    ROUND(SUM(oi.price)::NUMERIC, 2) AS total_product_sales
+FROM order_items oi
+JOIN products_clean p ON oi.product_id = p.product_id
+EFT JOIN product_categories_v2 pc ON p.product_category_name = pc.product_category_name
+JOIN orders o ON oi.order_id = o.order_id
+WHERE o.order_status = 'delivered'
+GROUP BY 1, 2
+ORDER BY total_items_sold DESC
+LIMIT 10;
+```
+### TOP VOLUME PRODUCT (3.5)
 ```sql
 SELECT 
     COALESCE(pc.product_category_name_english, 'Uncategorized') AS category_name,
@@ -312,22 +312,62 @@ SELECT
     ROUND(
         (COUNT(DISTINCT p.product_id)::NUMERIC / SUM(COUNT(DISTINCT p.product_id)) OVER ()) * 100, 2
     ) AS product_share_pct
-FROM products p
+FROM products_clean p
 LEFT JOIN product_categories pc ON p.product_category_name = pc.product_category_name
 GROUP BY 1
 ORDER BY total_unique_products DESC
 LIMIT 10;
 ```
+### SEGMENTASI CATEGORY
+WITH category_sales AS (
+    SELECT
+        COALESCE(pc.product_category_name_english, 'uncategorized') AS category,
+        SUM(oi.price) AS product_sales
+    FROM order_items oi
+    JOIN products_clean p
+        ON oi.product_id = p.product_id
+    LEFT JOIN product_categories_v2 pc ON p.product_category_name = pc.product_category_name
+	LEFT JOIN orders_clean o ON o.order_id = oi.order_id
+	WHERE o.order_status = 'delivered'
+    GROUP BY COALESCE(pc.product_category_name_english, 'uncategorized')),
+categorized AS (
+    SELECT 
+        category,
+        product_sales,
+        CASE 
+            WHEN product_sales >= 300000 THEN 'High Sales'
+            WHEN product_sales >= 30000 AND product_sales < 300000 THEN 'Medium Sales'
+            WHEN product_sales < 30000 THEN 'Low Sales'
+        END AS sales_category,
+        CASE 
+            WHEN product_sales >= 300000 THEN '(70-80%)'
+            WHEN product_sales >= 30000 AND product_sales < 300000 THEN '(15-20%)'
+            WHEN product_sales < 30000 THEN '(5-10%)'
+        END AS keterangan
+    FROM category_sales)
+SELECT 
+    sales_category,
+    COUNT(category) AS total_categories,
+	ROUND(COUNT(category) / SUM(COUNT(category)) OVER () * 100,2) AS pct,
+    ROUND(MIN(product_sales), 2) AS min_product_sales,
+    ROUND(MAX(product_sales), 2) AS max_product_sales,
+    ROUND(SUM(product_sales), 2) AS total_segment_sales,
+    keterangan
+FROM categorized
+GROUP BY sales_category, keterangan
+ORDER BY max_product_sales DESC;
+
 ## EDA 4 CUSTOMER PERFORMANCE
-### customer purchase frequency(4.1)
+### CUSTOMER PURCHASE FREQUENCY (4.1)
 ```sql
 WITH customer_orders AS (
     SELECT
         c.customer_unique_id,
         COUNT(DISTINCT o.order_id) AS total_orders
-    FROM orders o
+    FROM orders_clean o
     JOIN customers c
         ON o.customer_id = c.customer_id
+	WHERE o.order_status = 'delivered'
     GROUP BY c.customer_unique_id)
 SELECT
     total_orders,
@@ -338,25 +378,26 @@ FROM customer_orders
 GROUP BY total_orders
 ORDER BY total_orders;
 ```
-### repeat customer rate (4.2)
+### REPEAT CUSTUMER RATE (4.2)
 ```sql
 WITH customer_orders AS (
     SELECT
         c.customer_unique_id,
         COUNT(DISTINCT o.order_id) AS total_orders
-    FROM orders o
+    FROM orders_clean o
     JOIN customers c
         ON o.customer_id = c.customer_id
+	WHERE o.order_status = 'delivered'
     GROUP BY c.customer_unique_id)
 SELECT
-    COUNT(*) AS total_customers,
+    COUNT(*) AS total_completed_customers,
     COUNT(*) FILTER ( WHERE total_orders = 1) AS one_time_customers,
     COUNT(*) FILTER (WHERE total_orders > 1) AS repeat_customers,
     ROUND( COUNT(*) FILTER (WHERE total_orders > 1) * 100.0 / COUNT(*),2) AS repeat_customer_rate,
 	ROUND(COUNT(*) FILTER (WHERE total_orders = 1) * 100.0 / COUNT(*),2) AS one_time_customer_rate
 FROM customer_orders;
 ```
-### customer revenue/customer VALUE (4.3)
+### CUSTOMER REVENUE/CUSTOMER VALUE (4.3)
 ```sql
 WITH customer_sales AS (
     SELECT
@@ -368,6 +409,7 @@ JOIN customers c
     ON o.customer_id = c.customer_id
 LEFT JOIN order_items oi
     ON o.order_id = oi.order_id
+WHERE o.order_status = 'delivered'
 GROUP BY c.customer_unique_id)
 SELECT
     CASE
@@ -388,7 +430,7 @@ GROUP BY
     END
 ORDER BY total_sales DESC;
 ```
-### customer repeat vs order status (4.4)
+### CUSTOMER REPEAT VS ORDER STATUS (4.4)
 ```sql
 WITH customer_orders AS (
     SELECT
@@ -397,7 +439,8 @@ WITH customer_orders AS (
         o.order_status
     FROM orders_clean o
     JOIN customers c
-        ON o.customer_id = c.customer_id),
+        ON o.customer_id = c.customer_id
+		),
 customer_type AS (
     SELECT
         customer_unique_id,
@@ -411,7 +454,8 @@ SELECT
     END AS customer_type,
     co.order_status,
     COUNT(DISTINCT co.order_id) AS total_orders,
-    ROUND( COUNT(DISTINCT co.order_id) * 100.0
+    ROUND(
+        COUNT(DISTINCT co.order_id) * 100.0
         / SUM(COUNT(DISTINCT co.order_id))
           OVER (PARTITION BY
               CASE
@@ -429,7 +473,7 @@ ORDER BY
     customer_type,
     total_orders DESC;
 ```
-### Same Category vs Cross Category Repeat (4.5)
+### SAME CATEGORY VS CROSS CATEGORY REPEAT (4.5)
 ```sql
 WITH customer_orders AS (
     SELECT
@@ -496,7 +540,7 @@ FROM customer_repeat_behavior
 GROUP BY repeat_behavior
 ORDER BY repeat_customers DESC;
 ```
-### Customers Distribution
+### CUSTOMER DISTRIBUTION
 ```sql
 WITH customer_geography AS (
     SELECT 
@@ -523,6 +567,7 @@ SELECT
         (total_customers * 100.0 / SUM(total_customers) OVER ()), 
         2
     ) AS customer_share_pct,
+    
     -- % Kontribusi Penjualan (Revenue)
     ROUND(
         (total_sales * 100.0 / SUM(total_sales) OVER ()), 
@@ -532,7 +577,7 @@ FROM customer_geography
 ORDER BY total_customers DESC;
 ```
 ## EDA 5 SELLERS PERFORMANCE 
-### 20 Sellers by sales (5.1)
+### 20 SELLERS BY SALES (5.1)
 ```sql
 SELECT
     s.seller_id,
@@ -550,7 +595,7 @@ GROUP BY s.seller_id
 ORDER BY product_sales DESC
 LIMIT 20;
 ```
-### sellers detail (5.2)
+### SELLERS DETAIL (5.2)
 ```sql
 SELECT
     s.seller_id,
@@ -569,7 +614,7 @@ JOIN orders_clean o
 GROUP BY s.seller_id
 ORDER BY product_sales DESC;
 ```
-### segmentation sellers (5.3)
+### SEGEMENTATION SELLERS (5.3)
 ```sql
 WITH seller_items AS (
     SELECT 
@@ -601,7 +646,7 @@ FROM segmented_sellers
 GROUP BY seller_segment
 ORDER BY seller_segment ASC;
 ```
-### sellers performance by cancelation rate (5.4)
+### SELLERS PERFORMANCE BY CANCELATION RATE (5.4)
 ```sql
 WITH seller_orders AS (
     SELECT 
@@ -621,7 +666,7 @@ WHERE total_orders_handled >= 10
 ORDER BY cancellation_rate_pct DESC
 limit 20;
 ```
-### 10 sellers by rating stars (5.5)
+### 10 SELLERS BY RATING (5.5)
 ```sql
 SELECT 
     s.seller_id,
@@ -642,7 +687,7 @@ GROUP BY s.seller_id, s.seller_state
 HAVING COUNT(DISTINCT oi.order_id) >= 10
 ORDER BY 6 DESC;
 ```
-### distribusi sellers per wilayah
+### SELLERS DISTRIBUTION BY STATE
 ```sql
 WITH sellers_geography AS (
     SELECT 
@@ -672,7 +717,7 @@ FROM sellers_geography
 ORDER BY total_sellers DESC;
 ```
 ## EDA 6 DELIVERY PERFORMANCE 
-### 1. Tingkat Keterlambatan Pengiriman (On-Time vs Late Delivery Rate) (6.1)
+### 1. LATE DELIVERY RATE (On-Time vs Late Delivery Rate) (6.1)
 ```sql
 SELECT 
     CASE 
@@ -689,7 +734,7 @@ WHERE order_status = 'delivered'
   AND order_estimated_delivery_date IS NOT NULL
 GROUP BY 1;
 ```
-### Efisiensi Pemrosesan Penjual (6.2)
+### SELLERS PROCESSING TIME (6.2)
 ```sql
 SELECT 
     ROUND(
@@ -704,7 +749,7 @@ WHERE order_status = 'delivered'
   AND order_delivered_carrier_date IS NOT NULL
   AND order_delivered_carrier_date >= order_approved_at;
 ```
-### Durasi Transit Kurir dan rata-rata pengiriman (6.3) 
+### CARRIER TRANSIT TIME (6.3) 
 ```sql
 SELECT 
     ROUND(
@@ -741,19 +786,32 @@ GROUP BY 1;
 ```
 ### Disparitas Wilayah & Ongkos kirim (6.5)
 ```sql
+WITH customer_region AS (
+    SELECT 
+        o.order_id,
+        c.customer_state,
+        oi.freight_value,
+        EXTRACT(EPOCH FROM (o.order_delivered_customer_date - o.order_purchase_timestamp)) / 86400 AS delivery_days,
+        CASE 
+            WHEN c.customer_state IN ('SP', 'RJ', 'MG', 'ES') THEN '1. Southeast (Pusat Ekonomi)'
+            WHEN c.customer_state IN ('PR', 'RS', 'SC') THEN '2. South'
+            WHEN c.customer_state IN ('DF', 'GO', 'MT', 'MS') THEN '3. Central-West'
+            WHEN c.customer_state IN ('AL', 'BA', 'CE', 'MA', 'PB', 'PE', 'PI', 'RN', 'SE') THEN '4. Northeast (Terluar)'
+            WHEN c.customer_state IN ('AC', 'AP', 'AM', 'PA', 'RO', 'RR', 'TO') THEN '5. North (Terluar)'
+            ELSE 'Unknown'
+        END AS region
+    FROM orders_clean o
+    JOIN customers c ON o.customer_id = c.customer_id
+    JOIN order_items oi ON o.order_id = oi.order_id
+    WHERE o.order_status = 'delivered'
+      AND o.order_delivered_customer_date IS NOT NULL
+)
 SELECT 
-    c.customer_state,
-    COUNT(o.order_id) AS total_orders,
-    ROUND(
-        (COUNT(CASE WHEN o.order_delivered_customer_date <= o.order_estimated_delivery_date THEN 1 END)::NUMERIC / COUNT(o.order_id)) * 100, 2
-    ) AS on_time_rate_pct,
-    ROUND(AVG(DATE_PART('day', o.order_delivered_customer_date - o.order_purchase_timestamp))::NUMERIC, 1) AS avg_delivery_days,
-    ROUND(AVG(oi.freight_value)::NUMERIC, 2) AS avg_freight_value
-FROM orders o
-JOIN customers c ON o.customer_id = c.customer_id
-JOIN order_items oi ON o.order_id = oi.order_id
-WHERE o.order_status = 'delivered'
-  AND o.order_delivered_customer_date IS NOT NULL
-GROUP BY c.customer_state
-ORDER BY avg_delivery_days DESC;
+    region,
+    COUNT(DISTINCT order_id) AS total_orders,
+    ROUND(AVG(delivery_days)::numeric, 2) AS avg_delivery_days,
+    ROUND(AVG(freight_value)::numeric, 2) AS avg_freight_value
+FROM customer_region
+GROUP BY region
+ORDER BY region ASC;
 ```
