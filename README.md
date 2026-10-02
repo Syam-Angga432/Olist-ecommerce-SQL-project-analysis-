@@ -84,7 +84,7 @@ Proses analisis dilakukan secara terstruktur menggunakan PostgreSQL melalui 4 ta
 ## 5. Key Finding
 
 ### 5.1 Performa Bisnis Secara Keseluruhan
-Olist berhasil mencatatkan sekitar **96 ribu transaksi** dari **96 ribu pembeli unik**, dengan total nilai transaksi mencapai **15,8 juta**.
+Olist berhasil mencatatkan sekitar **96 ribu completed order** dari **96 ribu unique customers**, dengan total nilai transaksi mencapai **15,8 juta**.
 * **Penjualan Naik-Turun:** Tren penjualan tidak tumbuh mulus, melainkan mengalami naik-turun dari bulan ke bulan (MoM).
 * **Bukan Cuma dari Satu Segmen:** Pendapatan Olist tersebar di banyak kategori produk dan volume pesanan, bukan hanya bergantung pada satu jenis barang saja.
 
